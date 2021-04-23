@@ -9,7 +9,7 @@ public class DivideAndConquer : MonoBehaviour
     //public GameObject area;
     public List<Vector3> seedPoints;
     public int resolution;
-    public Vector3 origin;
+    private Vector3 origin;
     public float size; // along the x-axis and z-axis
     public List<VCell> cells;
     public DnCPoint[][] grid;
@@ -36,8 +36,8 @@ public class DivideAndConquer : MonoBehaviour
         {
             if (!debugGridCreated) 
             {
-                GenerateGrid();
                 SetSeeds();
+                GenerateGrid();
                 debugGridCreated = true;
             }
             for (int outer = 0; outer < grid.Length; outer++)
@@ -87,13 +87,14 @@ public class DivideAndConquer : MonoBehaviour
     #region algorithm
     private void SetSeeds()
     {
+        origin = transform.position;
         cells = new List<VCell>();
         for (int i = 1; i <= seedPoints.Count; i++)
         {
             var cell = new VCell
             {
                 id = i - 1,
-                seed = seedPoints[i - 1],
+                seed = seedPoints[i - 1] + origin,
                 points = new List<Vector3>(),
                 color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f))
             };
