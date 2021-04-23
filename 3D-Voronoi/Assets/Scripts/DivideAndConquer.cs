@@ -4,19 +4,91 @@ using UnityEngine;
 
 public class DivideAndConquer : MonoBehaviour
 {
-    public GameObject area;
+    public bool debug;
+    private bool debugGridCreated = false;
+    //public GameObject area;
     public List<Vector3> seedPoints;
     public int resolution;
     public Vector3 origin;
     public float size; // along the x-axis and z-axis
     public List<VCell> cells;
     public DnCPoint[][] grid;
-    public GameObject gridCellObject;
+    //public GameObject gridCellObject;
 
     void Start()
     {
         //Debug.Log(area.GetComponent<MeshCollider>().bounds.extents);
-        for(int i = 1; i <= seedPoints.Count; i++)
+        SetSeeds();
+        //area.SetActive(false);
+        GenerateGrid();
+    }
+
+    void Update()
+    {
+        
+    }
+
+    //----------DEBUGGING METHODS----------
+    #region debugging
+    private void OnDrawGizmos()
+    {
+        if (debug)
+        {
+            if (!debugGridCreated) 
+            {
+                GenerateGrid();
+                SetSeeds();
+                debugGridCreated = true;
+            }
+            for (int outer = 0; outer < grid.Length; outer++)
+            {
+                for (int inner = 0; inner < grid[outer].Length; inner++)
+                {
+                    grid[outer][inner].DebugDraw();
+                }
+            }
+            DrawSeeds();
+        }
+        else if(!debug && debugGridCreated)
+        {
+            debugGridCreated = false;
+        }
+
+        DrawGridArea();
+
+    }
+    private void DrawGridArea()
+    {
+        var topRight = origin;
+        topRight.x += size;
+        var bottomLeft = origin;
+        bottomLeft.y -= size;
+        var bottomRight = origin;
+        bottomRight.y -= size;
+        bottomRight.x += size;
+
+        Debug.DrawLine(origin, topRight, Color.white);
+        Debug.DrawLine(origin, bottomLeft, Color.white);
+        Debug.DrawLine(bottomLeft, bottomRight, Color.white);
+        Debug.DrawLine(topRight, bottomRight, Color.white);
+    }
+
+    private void DrawSeeds()
+    {
+        float size = 0.10f;
+        for(int i=0; i<cells.Count; i++)
+        {
+            Debug.DrawLine(cells[i].seed-new Vector3(size, 0, 0), cells[i].seed + new Vector3(size, 0, 0), cells[i].color);
+            Debug.DrawLine(cells[i].seed - new Vector3(0, size, 0), cells[i].seed + new Vector3(0, size, 0), cells[i].color);
+        }
+    }
+    #endregion
+    //----------ALGORITHM METHODS----------
+    #region algorithm
+    private void SetSeeds()
+    {
+        cells = new List<VCell>();
+        for (int i = 1; i <= seedPoints.Count; i++)
         {
             var cell = new VCell
             {
@@ -27,13 +99,6 @@ public class DivideAndConquer : MonoBehaviour
             };
             cells.Add(cell);
         }
-        //area.SetActive(false);
-        GenerateGrid();
-    }
-
-    void Update()
-    {
-        
     }
 
     private void GenerateGrid()
@@ -50,9 +115,9 @@ public class DivideAndConquer : MonoBehaviour
                 var newPoint = new DnCPoint();
                 
                 var center = new Vector3(
-                    (outer*size/resolution) + 0.5f * size/resolution, 
-                    0,
-                    0-(inner * size / resolution) - 0.5f * size/resolution);
+                    origin.x + (outer*size/resolution) + 0.5f * size/resolution,
+                    origin.y + 0 - (inner * size / resolution) - 0.5f * size / resolution,
+                    0);
 
 
                 newPoint.center = center;
@@ -60,13 +125,9 @@ public class DivideAndConquer : MonoBehaviour
                 newPoint.y = size / resolution;
                 
                 grid[outer][inner] = newPoint;
-                var go = Instantiate(gridCellObject, this.transform);
-                go.transform.position = newPoint.center;
-                go.GetComponent<MeshRenderer>().material.color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-                go.transform.localScale = new Vector3(newPoint.x, 1, newPoint.y);
-                
             }
         }
 
     }
+    #endregion
 }
