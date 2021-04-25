@@ -9,7 +9,7 @@ public class DnCPoint
     public float x; //Along x-axis. Total span
     public float y; //Along y-axis. Total span 
 
-    public int cellId = 0;
+    public int cellId = -1;
     public Vector3 center;
     public Color color = Color.green;
 

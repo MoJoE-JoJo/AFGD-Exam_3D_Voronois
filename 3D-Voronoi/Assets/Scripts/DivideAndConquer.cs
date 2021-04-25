@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DivideAndConquer : MonoBehaviour
 {
-    public bool debug;
+    public bool debug = false;
     private bool debugGridCreated = false;
     //public GameObject area;
     public List<Vector3> seedPoints;
@@ -40,14 +40,9 @@ public class DivideAndConquer : MonoBehaviour
                 GenerateGrid();
                 debugGridCreated = true;
             }
-            for (int outer = 0; outer < grid.Length; outer++)
-            {
-                for (int inner = 0; inner < grid[outer].Length; inner++)
-                {
-                    grid[outer][inner].DebugDraw();
-                }
-            }
+            DrawPointGrid();
             DrawSeeds();
+            DividAndConquer();
         }
         else if(!debug && debugGridCreated)
         {
@@ -82,6 +77,17 @@ public class DivideAndConquer : MonoBehaviour
             Debug.DrawLine(cells[i].seed - new Vector3(0, size, 0), cells[i].seed + new Vector3(0, size, 0), cells[i].color);
         }
     }
+
+    private void DrawPointGrid()
+    {
+        for (int outer = 0; outer < grid.Length; outer++)
+        {
+            for (int inner = 0; inner < grid[outer].Length; inner++)
+            {
+                grid[outer][inner].DebugDraw();
+            }
+        }
+    }
     #endregion
     //----------ALGORITHM METHODS----------
     #region algorithm
@@ -89,12 +95,12 @@ public class DivideAndConquer : MonoBehaviour
     {
         origin = transform.position;
         cells = new List<VCell>();
-        for (int i = 1; i <= seedPoints.Count; i++)
+        for (int i = 0; i < seedPoints.Count; i++)
         {
             var cell = new VCell
             {
-                id = i - 1,
-                seed = seedPoints[i - 1] + origin,
+                id = i,
+                seed = seedPoints[i] + origin,
                 points = new List<Vector3>(),
                 color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f))
             };
@@ -130,5 +136,111 @@ public class DivideAndConquer : MonoBehaviour
         }
 
     }
+
+    private void DividAndConquer()
+    {
+        //Step 1: calculate Points
+        var topLeftID = FindNearestSeed(0,0);
+        var topRightID = FindNearestSeed(resolution - 1, 0);
+        var bottomLeftID = FindNearestSeed(0, resolution - 1);
+        var bottomRightID = FindNearestSeed(resolution - 1, resolution - 1);
+        //Step 2: Base Case
+        if(CheckBaseCase(topLeftID, topRightID, bottomLeftID, bottomRightID))
+        {
+            BaseCase(topLeftID, 0,0, resolution - 1, resolution - 1);
+        }
+        //Step 3: Subdivide Case
+        else
+        {
+            int halfPoint = (resolution - 1) / 2;
+            DivideAndConquerRecursive(0, 0, halfPoint, halfPoint); //TopLeft subdivision
+            DivideAndConquerRecursive(halfPoint + 1, 0, (resolution - 1), halfPoint); //TopRight subdivision
+            DivideAndConquerRecursive(0, halfPoint + 1, halfPoint, (resolution - 1)); //BottomLeft subdivision
+            DivideAndConquerRecursive(halfPoint + 1, halfPoint + 1, (resolution - 1), (resolution - 1)); //BottomRight subdivision
+        }
+        //TODO: Clear unnecessary data
+    }
+
+    private void DivideAndConquerRecursive(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
+    {
+        //Check for single point
+        if (topLeftX == bottomRightX && topLeftY == bottomRightY) TrivialCase(topLeftX, topLeftY);
+        //Check for only 2 points
+        else if ((topLeftX == bottomRightX && topLeftY != bottomRightY) || (topLeftX != bottomRightX && topLeftY == bottomRightY)) 
+        {
+            TrivialCase(topLeftX, topLeftY);
+            TrivialCase(bottomRightX, bottomRightY);
+        }
+        else
+        {
+            //Step 1: calculate Points
+            var topLeftID = FindNearestSeed(topLeftX, topLeftY);
+            var topRightID = FindNearestSeed(bottomRightX, topLeftY);
+            var bottomLeftID = FindNearestSeed(topLeftX, bottomRightY);
+            var bottomRightID = FindNearestSeed(bottomRightX, bottomRightY);
+            //Step 2: Base Case
+            if (CheckBaseCase(topLeftID, topRightID, bottomLeftID, bottomRightID))
+            {
+                BaseCase(topLeftID, topLeftX, topLeftY, bottomRightX, bottomRightY);
+            }
+            //Step 3: Subdivide Case
+            else
+            {
+                int halfPointX = topLeftX + (bottomRightX-topLeftX) / 2;
+                int halfPointY = topLeftY + (bottomRightY-topLeftY) / 2;
+                DivideAndConquerRecursive(topLeftX, topLeftY, halfPointX, halfPointY); //TopLeft subdivision
+                DivideAndConquerRecursive(halfPointX + 1, topLeftY, bottomRightX, halfPointY); //TopRight subdivision
+                DivideAndConquerRecursive(topLeftX, halfPointY + 1, halfPointX, bottomRightY); //BottomLeft subdivision
+                DivideAndConquerRecursive(halfPointX + 1, halfPointY + 1, bottomRightX, bottomRightY); //BottomRight subdivision
+            }
+        }
+    }
+
+    private void BaseCase(int id, int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
+    {
+        for(int x = topLeftX; x <= bottomRightX; x++)
+        {
+            for(int y = topLeftY; y <= bottomRightY; y++)
+            {
+                grid[x][y].cellId = id;
+                grid[x][y].color = cells[id].color;
+                cells[id].points.Add(grid[x][y].center);
+            }
+        }
+    }
+
+    private void TrivialCase(int x, int y)
+    {
+        var seedID = FindNearestSeed(x, y);
+
+        grid[x][y].cellId = seedID;
+        grid[x][y].color = cells[seedID].color;
+        cells[seedID].points.Add(grid[x][y].center);
+    }
+
+    private bool CheckBaseCase(int seed1, int seed2, int seed3, int seed4)
+    {
+        if (seed1 == seed2 && seed1 == seed3 && seed1 == seed4) return true;
+        else return false;
+    }
+
+    private int FindNearestSeed(int x, int y)
+    {
+        float distance = (seedPoints[0] - grid[x][y].center).magnitude;
+
+        var returnID = 0;
+        for(int i = 1; i<seedPoints.Count; i++)
+        {
+            float newDistance = (seedPoints[i] - grid[x][y].center).magnitude;
+            if (newDistance < distance) 
+            {
+                distance = newDistance;
+                returnID = i;
+            }
+        }
+
+        return returnID;
+    }
+
     #endregion
 }
