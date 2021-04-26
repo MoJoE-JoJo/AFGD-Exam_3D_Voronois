@@ -42,7 +42,7 @@ public class DivideAndConquer : MonoBehaviour
             }
             for (int i = 0; i < seedPoints.Count; i++)
             {
-                cells[i].points = new List<Vector3>();
+                cells[i].points = new List<GridPoint>();
             }
             DrawPointGrid();
             DrawSeeds();
@@ -105,7 +105,7 @@ public class DivideAndConquer : MonoBehaviour
             {
                 id = i,
                 seed = seedPoints[i] + origin,
-                points = new List<Vector3>(),
+                points = new List<GridPoint>(),
                 color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f))
             };
             cells.Add(cell);
@@ -163,6 +163,7 @@ public class DivideAndConquer : MonoBehaviour
             DivideAndConquerRecursive(halfPoint + 1, halfPoint + 1, (resolution - 1), (resolution - 1)); //BottomRight subdivision
         }
         //TODO: Clear unnecessary data
+        CullInnerPoints();
     }
 
     private void DivideAndConquerRecursive(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
@@ -240,28 +241,26 @@ public class DivideAndConquer : MonoBehaviour
         {
             grid[x][topLeftY].cellId = id;
             grid[x][topLeftY].color = cells[id].color;
-            cells[id].points.Add(grid[x][topLeftY].center);
+            cells[id].points.Add(new GridPoint { x = x, y = topLeftY });
         }
         for (int x = topLeftX; x <= bottomRightX; x++)
         {
             grid[x][bottomRightY].cellId = id;
             grid[x][bottomRightY].color = cells[id].color;
-            cells[id].points.Add(grid[x][bottomRightY].center);
+            cells[id].points.Add(new GridPoint { x = x, y = bottomRightY});
         }
         for (int y = topLeftY+1; y <= bottomRightY-1; y++)
         {
             grid[topLeftX][y].cellId = id;
             grid[topLeftX][y].color = cells[id].color;
-            cells[id].points.Add(grid[topLeftX][y].center);
+            cells[id].points.Add(new GridPoint { x = topLeftX, y = y});
         }
         for (int y = topLeftY+1; y <= bottomRightY-1; y++)
         {
             grid[bottomRightX][y].cellId = id;
             grid[bottomRightX][y].color = cells[id].color;
-            cells[id].points.Add(grid[bottomRightX][y].center);
+            cells[id].points.Add(new GridPoint { x = bottomRightX, y = y});
         }
-        
-
     }
 
     private void TrivialCase(int x, int y)
@@ -270,7 +269,43 @@ public class DivideAndConquer : MonoBehaviour
 
         grid[x][y].cellId = seedID;
         grid[x][y].color = cells[seedID].color;
-        cells[seedID].points.Add(grid[x][y].center);
+        cells[seedID].points.Add(new GridPoint { x = x, y = y});
+    }
+
+    private void CullInnerPoints()
+    {
+        for(int cellIndex = 0; cellIndex<cells.Count; cellIndex++)
+        {
+            var newCellPointList = new List<GridPoint>();
+            for(int pointIndex = 0; pointIndex < cells[cellIndex].points.Count; pointIndex++)
+            {
+                int pointX = cells[cellIndex].points[pointIndex].x;
+                int pointY = cells[cellIndex].points[pointIndex].y;
+                var onRim = false;
+                if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1) onRim = true;
+                else
+                {
+                    if      (grid[pointX - 1][pointY].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX - 1][pointY].cellId) onRim = true;
+                    else if (grid[pointX + 1][pointY].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY].cellId) onRim = true;
+                    else if (grid[pointX][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX][pointY - 1].cellId) onRim = true;
+                    else if (grid[pointX][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX][pointY + 1].cellId) onRim = true;
+
+                    else if (grid[pointX + 1][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY - 1].cellId) onRim = true;
+                    else if (grid[pointX + 1][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY + 1].cellId) onRim = true;
+                    else if (grid[pointX - 1][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX - 1][pointY - 1].cellId) onRim = true;
+                    else if (grid[pointX - 1][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX -1][pointY + 1].cellId) onRim = true;
+                }
+                if (onRim)
+                {
+                    newCellPointList.Add(new GridPoint { x = pointX, y = pointY });
+                }
+                else if (!onRim)
+                {
+                    grid[pointX][pointY].color = Color.green;
+                }
+            }
+            cells[cellIndex].points = newCellPointList;
+        }
     }
 
     private bool CheckBaseCase(int seed1, int seed2, int seed3, int seed4)

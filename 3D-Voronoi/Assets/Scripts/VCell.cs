@@ -7,6 +7,6 @@ public class VCell
 {
     public int id;
     public Vector3 seed;
-    public List<Vector3> points;
+    public List<GridPoint> points; 
     public Color color;
 }
