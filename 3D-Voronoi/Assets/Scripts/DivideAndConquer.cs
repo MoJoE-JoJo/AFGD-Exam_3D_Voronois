@@ -40,6 +40,10 @@ public class DivideAndConquer : MonoBehaviour
                 GenerateGrid();
                 debugGridCreated = true;
             }
+            for (int i = 0; i < seedPoints.Count; i++)
+            {
+                cells[i].points = new List<Vector3>();
+            }
             DrawPointGrid();
             DrawSeeds();
             DividAndConquer();
@@ -198,6 +202,9 @@ public class DivideAndConquer : MonoBehaviour
 
     private void BaseCase(int id, int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
     {
+
+        /*
+        //Full add
         for(int x = topLeftX; x <= bottomRightX; x++)
         {
             for(int y = topLeftY; y <= bottomRightY; y++)
@@ -207,6 +214,54 @@ public class DivideAndConquer : MonoBehaviour
                 cells[id].points.Add(grid[x][y].center);
             }
         }
+        */
+        /*
+        //Adds only the corners
+        grid[topLeftX][topLeftY].cellId = id;
+        grid[topLeftX][topLeftY].color = cells[id].color;
+        cells[id].points.Add(grid[topLeftX][topLeftY].center);
+
+        grid[bottomRightX][topLeftY].cellId = id;
+        grid[bottomRightX][topLeftY].color = cells[id].color;
+        cells[id].points.Add(grid[bottomRightX][topLeftY].center);
+
+        grid[topLeftX][bottomRightY].cellId = id;
+        grid[topLeftX][bottomRightY].color = cells[id].color;
+        cells[id].points.Add(grid[topLeftX][bottomRightY].center);
+
+        grid[bottomRightX][bottomRightY].cellId = id;
+        grid[bottomRightX][bottomRightY].color = cells[id].color;
+        cells[id].points.Add(grid[bottomRightX][bottomRightY].center);
+        */
+
+        //Adds only square edge
+        
+        for(int x = topLeftX; x <= bottomRightX; x++)
+        {
+            grid[x][topLeftY].cellId = id;
+            grid[x][topLeftY].color = cells[id].color;
+            cells[id].points.Add(grid[x][topLeftY].center);
+        }
+        for (int x = topLeftX; x <= bottomRightX; x++)
+        {
+            grid[x][bottomRightY].cellId = id;
+            grid[x][bottomRightY].color = cells[id].color;
+            cells[id].points.Add(grid[x][bottomRightY].center);
+        }
+        for (int y = topLeftY+1; y <= bottomRightY-1; y++)
+        {
+            grid[topLeftX][y].cellId = id;
+            grid[topLeftX][y].color = cells[id].color;
+            cells[id].points.Add(grid[topLeftX][y].center);
+        }
+        for (int y = topLeftY+1; y <= bottomRightY-1; y++)
+        {
+            grid[bottomRightX][y].cellId = id;
+            grid[bottomRightX][y].color = cells[id].color;
+            cells[id].points.Add(grid[bottomRightX][y].center);
+        }
+        
+
     }
 
     private void TrivialCase(int x, int y)
