@@ -88,7 +88,7 @@ public class DivideAndConquer : MonoBehaviour
         {
             for (int inner = 0; inner < grid[outer].Length; inner++)
             {
-                grid[outer][inner].DebugDraw();
+                if(grid[outer][inner].cellId != -1)grid[outer][inner].DebugDraw();
             }
         }
     }
@@ -300,6 +300,7 @@ public class DivideAndConquer : MonoBehaviour
                 else if (!onRim)
                 {
                     grid[pointX][pointY].color = Color.green;
+                    grid[pointX][pointY].cellId = -1;
                 }
             }
             cells[cellIndex].points = newCellPointList;
