@@ -285,15 +285,13 @@ public class DivideAndConquer : MonoBehaviour
                 if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1) onRim = true;
                 else
                 {
-                    if      (grid[pointX - 1][pointY].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX - 1][pointY].cellId) onRim = true;
-                    else if (grid[pointX + 1][pointY].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY].cellId) onRim = true;
-                    else if (grid[pointX][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX][pointY - 1].cellId) onRim = true;
-                    else if (grid[pointX][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX][pointY + 1].cellId) onRim = true;
-
-                    else if (grid[pointX + 1][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY - 1].cellId) onRim = true;
-                    else if (grid[pointX + 1][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX + 1][pointY + 1].cellId) onRim = true;
-                    else if (grid[pointX - 1][pointY - 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX - 1][pointY - 1].cellId) onRim = true;
-                    else if (grid[pointX - 1][pointY + 1].cellId > -1 && grid[pointX][pointY].cellId != grid[pointX -1][pointY + 1].cellId) onRim = true;
+                    for(int x = pointX-1; x <= pointX+1; x++)
+                    {
+                        for(int y = pointY-1; y <= pointY+1; y++)
+                        {
+                            if (grid[x][y].cellId > -1 && grid[pointX][pointY].cellId != grid[x][y].cellId) onRim = true;
+                        }
+                    }
                 }
                 if (onRim)
                 {
