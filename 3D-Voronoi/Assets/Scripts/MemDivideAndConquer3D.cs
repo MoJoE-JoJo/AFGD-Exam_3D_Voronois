@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MemDivideAndConquer : MonoBehaviour
+public class MemDivideAndConquer3D : MonoBehaviour
 {
     [Header("Debugging")]
     public bool drawArea = false;
@@ -21,12 +21,12 @@ public class MemDivideAndConquer : MonoBehaviour
     public List<Vector3> seedPoints;
     public int resolution;
     private Vector3 origin;
-    
+
     public float size;
     public List<VCell> cells;
-    
+
     public int[][] grid;
-    
+
 
     void Start()
     {
@@ -55,9 +55,9 @@ public class MemDivideAndConquer : MonoBehaviour
         var topRight = origin;
         topRight.x += size;
         var bottomLeft = origin;
-        bottomLeft.y += size;
+        bottomLeft.y -= size;
         var bottomRight = origin;
-        bottomRight.y += size;
+        bottomRight.y -= size;
         bottomRight.x += size;
 
         Debug.DrawLine(origin, topRight, Color.white);
@@ -161,8 +161,8 @@ public class MemDivideAndConquer : MonoBehaviour
             DivideAndConquerRecursive(0, halfPoint + 1, halfPoint, (resolution - 1)); //BottomLeft subdivision
             DivideAndConquerRecursive(halfPoint + 1, halfPoint + 1, (resolution - 1), (resolution - 1)); //BottomRight subdivision
         }
-        if(debugType == DEBUGDRAWTYPE.DRAWEDGE) CullInnerPoints();
-        else if(!drawDivideAndConquer) CullInnerPoints();
+        if (debugType == DEBUGDRAWTYPE.DRAWEDGE) CullInnerPoints();
+        else if (!drawDivideAndConquer) CullInnerPoints();
     }
 
     private void DivideAndConquerRecursive(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
@@ -219,7 +219,7 @@ public class MemDivideAndConquer : MonoBehaviour
         }
 
         //Adds only the corners
-        if(debugType == DEBUGDRAWTYPE.DRAWCHECKPOINTS)
+        if (debugType == DEBUGDRAWTYPE.DRAWCHECKPOINTS)
         {
             addGridPoint.x = topLeftX;
             addGridPoint.y = topLeftY;
@@ -228,22 +228,22 @@ public class MemDivideAndConquer : MonoBehaviour
 
             addGridPoint.x = bottomRightX;
             addGridPoint.y = topLeftY;
-            grid[bottomRightX][topLeftY]= id;
+            grid[bottomRightX][topLeftY] = id;
             cells[id].points.Add(addGridPoint);
 
             addGridPoint.x = topLeftX;
             addGridPoint.y = topLeftY;
-            grid[topLeftX][bottomRightY]= id;
+            grid[topLeftX][bottomRightY] = id;
             cells[id].points.Add(addGridPoint);
 
             addGridPoint.x = bottomRightX;
             addGridPoint.y = bottomRightY;
-            grid[bottomRightX][bottomRightY]= id;
+            grid[bottomRightX][bottomRightY] = id;
             cells[id].points.Add(addGridPoint);
         }
 
         //Adds only square edge
-        if(debugType == DEBUGDRAWTYPE.DRAWSQUARES || debugType == DEBUGDRAWTYPE.DRAWEDGE)
+        if (debugType == DEBUGDRAWTYPE.DRAWSQUARES || debugType == DEBUGDRAWTYPE.DRAWEDGE)
         {
             for (x = topLeftX; x <= bottomRightX; x++)
             {
@@ -281,7 +281,7 @@ public class MemDivideAndConquer : MonoBehaviour
 
         var seedID = FindNearestSeed(x, y);
 
-        grid[x][y]= seedID;
+        grid[x][y] = seedID;
 
         addGridPoint.x = x;
         addGridPoint.y = y;

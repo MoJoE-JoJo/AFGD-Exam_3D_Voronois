@@ -757,6 +757,7 @@ GameObject:
   m_Component:
   - component: {fileID: 787860685}
   - component: {fileID: 787860684}
+  - component: {fileID: 787860686}
   m_Layer: 0
   m_Name: Mem Divide and Conquer
   m_TagString: Untagged
@@ -782,14 +783,14 @@ MonoBehaviour:
   debugType: 1
   rerun: 0
   seedPoints:
-  - {x: 4.88, y: -2.82, z: 0}
-  - {x: 3.6, y: -8.16, z: 0}
-  - {x: 9.67, y: -5.69, z: 0}
-  - {x: 7.46, y: -10.7, z: 0}
-  - {x: 5.51, y: -6.89, z: 0}
-  - {x: 11.51, y: -7.48, z: 0}
-  - {x: 3.8, y: -2.9, z: 0}
-  resolution: 1000
+  - {x: 4.88, y: 2.82, z: 0}
+  - {x: 3.6, y: 8.16, z: 0}
+  - {x: 9.67, y: 5.69, z: 0}
+  - {x: 7.46, y: 10.7, z: 0}
+  - {x: 5.51, y: 6.89, z: 0}
+  - {x: 11.51, y: 7.48, z: 0}
+  - {x: 3.8, y: 2.9, z: 0}
+  resolution: 13
   size: 13
   cells:
   - id: 0
@@ -26886,6 +26887,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &787860686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787860683}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0f462769cbf0f47a1f0baae590e81d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drawArea: 0
+  drawSeeds: 0
+  drawDivideAndConquer: 0
+  debugType: 1
+  rerun: 0
+  seedPoints:
+  - {x: 4.88, y: -2.82, z: 0}
+  - {x: 3.6, y: -8.16, z: 0}
+  - {x: 9.67, y: -5.69, z: 0}
+  - {x: 7.46, y: -10.7, z: 0}
+  - {x: 5.51, y: -6.89, z: 0}
+  - {x: 11.51, y: -7.48, z: 0}
+  - {x: 3.8, y: -2.9, z: 0}
+  resolution: 100
+  size: 0
+  cells: []
 --- !u!1 &812978281
 GameObject:
   m_ObjectHideFlags: 0
