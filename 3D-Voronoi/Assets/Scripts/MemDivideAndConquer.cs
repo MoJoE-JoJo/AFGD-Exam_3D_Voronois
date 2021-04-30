@@ -27,7 +27,7 @@ public class MemDivideAndConquer : MonoBehaviour
     public float size;
     public List<VCell> cells;
     
-    public int?[][] grid;
+    public int[][] grid;
     
 
     void Start()
@@ -52,34 +52,6 @@ public class MemDivideAndConquer : MonoBehaviour
 
     //----------DEBUGGING METHODS----------
     #region debugging
-    private void OnDrawGizmos()
-    {
-        /*
-        if (debug)
-        {
-            if (!debugGridCreated)
-            {
-                SetSeeds();
-                InitGrid();
-                debugGridCreated = true;
-            }
-            for (int i = 0; i < seedPoints.Count; i++)
-            {
-                cells[i].points = new List<GridPoint>();
-            }
-            DrawPointGrid();
-            DrawSeeds();
-            DividAndConquer();
-        }
-        else if (!debug && debugGridCreated)
-        {
-            debugGridCreated = false;
-        }
-
-        DrawGridArea();
-        */
-        
-    }
     private void DrawGridArea()
     {
         var topRight = origin;
@@ -108,11 +80,12 @@ public class MemDivideAndConquer : MonoBehaviour
 
     private void DrawPointGrid()
     {
-        for (int outer = 0; outer < grid.Length; outer++)
+        int x, y;
+        for (x = 0; x < grid.Length; x++)
         {
-            for (int inner = 0; inner < grid[outer].Length; inner++)
+            for (y = 0; y < grid[x].Length; y++)
             {
-                if (grid[outer][inner] != null) DebugDrawPoint((int)grid[outer][inner], outer, inner);
+                if (grid[x][y] > -1) DebugDrawPoint((int)grid[x][y], x, y);
                 //if (grid[outer][inner].cellId != -1) grid[outer][inner].DebugDraw();
             }
         }
@@ -153,16 +126,17 @@ public class MemDivideAndConquer : MonoBehaviour
 
     private void InitGrid()
     {
-        grid = new int?[resolution][];
+        int x, y;
+        grid = new int[resolution][];
         for (int i = 0; i < grid.Length; i++)
         {
-            grid[i] = new int?[resolution];
+            grid[i] = new int[resolution];
         }
-        for (int outer = 0; outer < grid.Length; outer++)
+        for (x = 0; x < grid.Length; x++)
         {
-            for (int inner = 0; inner < grid[outer].Length; inner++)
+            for (y = 0; y < grid[x].Length; y++)
             {
-                grid[outer][inner] = null;
+                grid[x][y] = -1;
             }
         }
 
@@ -230,12 +204,13 @@ public class MemDivideAndConquer : MonoBehaviour
 
     private void BaseCase(int id, int topLeftX, int topLeftY, int bottomRightX, int bottomRightY)
     {
+        int x, y;
         //Full add
         if (debugType == DEBUGDRAWTYPE.DRAWALL)
         {
-            for (int x = topLeftX; x <= bottomRightX; x++)
+            for (x = topLeftX; x <= bottomRightX; x++)
             {
-                for (int y = topLeftY; y <= bottomRightY; y++)
+                for (y = topLeftY; y <= bottomRightY; y++)
                 {
                     addGridPoint.x = x;
                     addGridPoint.y = y;
@@ -272,28 +247,28 @@ public class MemDivideAndConquer : MonoBehaviour
         //Adds only square edge
         if(debugType == DEBUGDRAWTYPE.DRAWSQUARES || debugType == DEBUGDRAWTYPE.DRAWEDGE)
         {
-            for (int x = topLeftX; x <= bottomRightX; x++)
+            for (x = topLeftX; x <= bottomRightX; x++)
             {
                 addGridPoint.x = x;
                 addGridPoint.y = topLeftY;
                 grid[x][topLeftY] = id;
                 cells[id].points.Add(addGridPoint);
             }
-            for (int x = topLeftX; x <= bottomRightX; x++)
+            for (x = topLeftX; x <= bottomRightX; x++)
             {
                 addGridPoint.x = x;
                 addGridPoint.y = bottomRightY;
                 grid[x][bottomRightY] = id;
                 cells[id].points.Add(addGridPoint);
             }
-            for (int y = topLeftY + 1; y <= bottomRightY - 1; y++)
+            for (y = topLeftY + 1; y <= bottomRightY - 1; y++)
             {
                 addGridPoint.x = topLeftX;
                 addGridPoint.y = y;
                 grid[topLeftX][y] = id;
                 cells[id].points.Add(addGridPoint);
             }
-            for (int y = topLeftY + 1; y <= bottomRightY - 1; y++)
+            for (y = topLeftY + 1; y <= bottomRightY - 1; y++)
             {
                 addGridPoint.x = bottomRightX;
                 addGridPoint.y = y;
@@ -322,8 +297,7 @@ public class MemDivideAndConquer : MonoBehaviour
         int pointY;
         bool onRim;
 
-        int x;
-        int y;
+        int x, y;
         int pointIndex;
 
         for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
@@ -341,7 +315,7 @@ public class MemDivideAndConquer : MonoBehaviour
                     {
                         for (y = pointY - 1; y <= pointY + 1; y++)
                         {
-                            if (grid[x][y] != null && grid[pointX][pointY] != grid[x][y])
+                            if (grid[x][y] > -1 && grid[pointX][pointY] != grid[x][y])
                             {
                                 onRim = true;
                                 addGridPoint.x = pointX;
@@ -357,7 +331,7 @@ public class MemDivideAndConquer : MonoBehaviour
                 }
                 else if (!onRim)
                 {
-                    grid[pointX][pointY] = null;
+                    grid[pointX][pointY] = -1;
                 }
             }
             cells[cellIndex].points = newCellPointList;
