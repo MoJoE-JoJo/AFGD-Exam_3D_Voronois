@@ -23,6 +23,7 @@ public class DnCDebugPoint : MonoBehaviour
         Debug.DrawLine(GetLeftTopBack(), GetRightTopBack(), color);
         Debug.DrawLine(GetRightBottomBack(), GetRightTopBack(), color);
 
+        
         //Plane connectors
         Debug.DrawLine(GetLeftBottomFront(), GetLeftBottomBack(), color);
         Debug.DrawLine(GetLeftTopFront(), GetLeftTopBack(), color);
@@ -34,6 +35,7 @@ public class DnCDebugPoint : MonoBehaviour
         Debug.DrawLine(GetLeftTopFront(), GetRightBottomBack(), color);
         Debug.DrawLine(GetRightBottomFront(), GetLeftTopBack(), color);
         Debug.DrawLine(GetRightTopFront(), GetLeftBottomBack(), color);
+        
 
     }
 
@@ -41,66 +43,74 @@ public class DnCDebugPoint : MonoBehaviour
     //Front corners
     public Vector3 GetLeftTopFront()
     {
-        center.x = center.x - x / 2;
-        center.y = center.y + y / 2;
-        center.z = center.z - z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x - x / 2;
+        vec.y = center.y + y / 2;
+        vec.z = center.z - z / 2;
+        return vec;
     }
 
     public Vector3 GetRightTopFront()
     {
-        center.x = center.x + x / 2;
-        center.y = center.y + y / 2;
-        center.z = center.z - z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x + x / 2;
+        vec.y = center.y + y / 2;
+        vec.z = center.z - z / 2;
+        return vec;
     }
 
     public Vector3 GetLeftBottomFront()
     {
-        center.x = center.x - x / 2;
-        center.y = center.y - y / 2;
-        center.z = center.z - z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x - x / 2;
+        vec.y = center.y - y / 2;
+        vec.z = center.z - z / 2;
+        return vec;
     }
 
     public Vector3 GetRightBottomFront()
     {
-        center.x = center.x + x / 2;
-        center.y = center.y - y / 2;
-        center.z = center.z - z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x + x / 2;
+        vec.y = center.y - y / 2;
+        vec.z = center.z - z / 2;
+        return vec;
     }
 
     //Back corners
     public Vector3 GetLeftTopBack()
     {
-        center.x = center.x - x / 2;
-        center.y = center.y + y / 2;
-        center.z = center.z + z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x - x / 2;
+        vec.y = center.y + y / 2;
+        vec.z = center.z + z / 2;
+        return vec;
     }
 
     public Vector3 GetRightTopBack()
     {
-        center.x = center.x + x / 2;
-        center.y = center.y + y / 2;
-        center.z = center.z + z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x + x / 2;
+        vec.y = center.y + y / 2;
+        vec.z = center.z + z / 2;
+        return vec;
     }
 
     public Vector3 GetLeftBottomBack()
     {
-        center.x = center.x - x / 2;
-        center.y = center.y - y / 2;
-        center.z = center.z + z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x - x / 2;
+        vec.y = center.y - y / 2;
+        vec.z = center.z + z / 2;
+        return vec;
     }
 
     public Vector3 GetRightBottomBack()
     {
-        center.x = center.x + x / 2;
-        center.y = center.y - y / 2;
-        center.z = center.z + z / 2;
-        return center;
+        var vec = center;
+        vec.x = center.x + x / 2;
+        vec.y = center.y - y / 2;
+        vec.z = center.z + z / 2;
+        return vec;
     }
 }
