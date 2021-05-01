@@ -229,7 +229,8 @@ public class MemDivideAndConquer3D : MonoBehaviour
         }
         if (debugType == DEBUGDRAWTYPE.DRAWEDGE)
         {
-
+            CullInnerPoints();
+            /*
             int lastAverage = 0;
             int newAverage = 0;
             for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
@@ -256,10 +257,13 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 }
                 newAverage /= cells.Count;
             }
+            */
         }
 
         else if (!drawDivideAndConquer)
         {
+            CullInnerPoints();
+            /*
             int lastAverage = 0;
             int newAverage = 0;
             for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
@@ -286,6 +290,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 }
                 newAverage /= cells.Count;
             }
+            */
         }
     }
 
@@ -540,7 +545,8 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 pointY = cells[cellIndex].points[pointIndex].y;
                 pointZ = cells[cellIndex].points[pointIndex].z;
                 onRim = false;
-                //if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = true;
+
+                //Edge of the cube points
                 if (
                     ((pointY == 0 || pointY == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
                     ((pointX == 0 || pointX == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
@@ -552,9 +558,11 @@ public class MemDivideAndConquer3D : MonoBehaviour
                     CheckCullForXZPlanes(pointX, pointY, pointZ)
                     ) onRim = true;
                 else if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = false;
-                //Mangler at bibeholde dem på kanten hvor der er 2 der støder op til hinanden
+                
+                //Inner points
                 else
                 {
+                    //var neighborIDs = new List<int>();
                     for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
                     {
                         for (y = pointY - 1; y <= pointY + 1; y++) //Get neighbors on y-axis
@@ -563,6 +571,8 @@ public class MemDivideAndConquer3D : MonoBehaviour
                             {
                                 if (grid[x][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][y][z])
                                 {
+                                    //if (!neighborIDs.Contains(grid[x][y][z])) neighborIDs.Add(grid[x][y][z]);
+                                    
                                     if (tempId == -1)
                                     {
                                         tempId = grid[x][y][z];
@@ -571,25 +581,29 @@ public class MemDivideAndConquer3D : MonoBehaviour
                                     else if (tempId > -1 && grid[x][y][z] != tempId)
                                     {
                                         onRim = true;
-                                        addGridPoint.x = pointX;
-                                        addGridPoint.y = pointY;
-                                        addGridPoint.z = pointZ;
-                                        tempId = -1;
                                     }
+                                    
                                 }
+                                
                             }
                         }
                     }
+                    //if (neighborIDs.Count > 1) onRim = true;
                 }
+                
                 if (onRim)
                 {
-                    //tempId = -1;
+                    addGridPoint.x = pointX;
+                    addGridPoint.y = pointY;
+                    addGridPoint.z = pointZ;
                     newCellPointList.Add(addGridPoint);
                 }
                 else if (!onRim)
                 {
                     grid[pointX][pointY][pointZ] = -1;
                 }
+                tempId = -1;
+
             }
             cells[cellIndex].points = newCellPointList;
         }
