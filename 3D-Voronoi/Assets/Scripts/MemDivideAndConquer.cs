@@ -364,7 +364,10 @@ public class MemDivideAndConquer : MonoBehaviour
 
     private Vector3 GridPointCenter(int x, int y)
     {
-
+        return new Vector3(
+            origin.x + (x * size / resolution) + 0.5f * size / resolution,
+            origin.y + (y * size / resolution) + 0.5f * size / resolution,
+            0);
         gridPointCenterVector.x = origin.x + (x * size / resolution) + 0.5f * size / resolution;
         gridPointCenterVector.y = origin.y + (y * size / resolution) + 0.5f * size / resolution;
         gridPointCenterVector.z = 0;
