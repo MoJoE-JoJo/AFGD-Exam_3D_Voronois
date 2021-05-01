@@ -530,7 +530,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
         int pointX;
         int pointY;
         int pointZ;
-        int tempId = -1;
+        int tempId=-1;
         bool onRim;
 
         int x, y, z;
@@ -562,7 +562,6 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 //Inner points
                 else
                 {
-                    //var neighborIDs = new List<int>();
                     for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
                     {
                         for (y = pointY - 1; y <= pointY + 1; y++) //Get neighbors on y-axis
@@ -571,24 +570,13 @@ public class MemDivideAndConquer3D : MonoBehaviour
                             {
                                 if (grid[x][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][y][z])
                                 {
-                                    //if (!neighborIDs.Contains(grid[x][y][z])) neighborIDs.Add(grid[x][y][z]);
-                                    
-                                    if (tempId == -1)
-                                    {
-                                        tempId = grid[x][y][z];
-                                        //grid[x][y][z] = -1;
-                                    }
-                                    else if (tempId > -1 && grid[x][y][z] != tempId)
-                                    {
-                                        onRim = true;
-                                    }
+                                    if (tempId == -1)tempId = grid[x][y][z];
+                                    else if (tempId > -1 && grid[x][y][z] != tempId) onRim = true;
                                     
                                 }
-                                
                             }
                         }
                     }
-                    //if (neighborIDs.Count > 1) onRim = true;
                 }
                 
                 if (onRim)
