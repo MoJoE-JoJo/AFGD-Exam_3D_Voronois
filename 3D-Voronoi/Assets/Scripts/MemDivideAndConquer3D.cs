@@ -18,6 +18,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
     [Header("Algorithm Stuff")]
     private GridPoint addGridPoint = new GridPoint();
     //private Vector3 gridPointCenterVector = new Vector3();
+    [Range(0f, 1f)]
     public List<Vector3> seedPoints;
     public int resolution;
     private Vector3 origin;
@@ -226,8 +227,66 @@ public class MemDivideAndConquer3D : MonoBehaviour
             DivideAndConquerRecursive(0, halfPoint, halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //LeftTopBack subdivision
             DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //RightTopBack subdivision
         }
-        if (debugType == DEBUGDRAWTYPE.DRAWEDGE) CullInnerPoints();
-        else if (!drawDivideAndConquer) CullInnerPoints();
+        if (debugType == DEBUGDRAWTYPE.DRAWEDGE)
+        {
+
+            int lastAverage = 0;
+            int newAverage = 0;
+            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+            {
+                lastAverage += cells[cellIndex].points.Count;
+            }
+            lastAverage /= cells.Count;
+
+            CullInnerPoints();
+            
+            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+            {
+                newAverage += cells[cellIndex].points.Count;
+            }
+            newAverage /= cells.Count;
+
+            while (newAverage/lastAverage < 0.95f)
+            {
+                lastAverage = newAverage;
+                CullInnerPoints();
+                for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+                {
+                    newAverage += cells[cellIndex].points.Count;
+                }
+                newAverage /= cells.Count;
+            }
+        }
+
+        else if (!drawDivideAndConquer)
+        {
+            int lastAverage = 0;
+            int newAverage = 0;
+            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+            {
+                lastAverage += cells[cellIndex].points.Count;
+            }
+            lastAverage /= cells.Count;
+
+            CullInnerPoints();
+
+            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+            {
+                newAverage += cells[cellIndex].points.Count;
+            }
+            newAverage /= cells.Count;
+
+            while (newAverage / lastAverage < 0.95f)
+            {
+                lastAverage = newAverage;
+                CullInnerPoints();
+                for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+                {
+                    newAverage += cells[cellIndex].points.Count;
+                }
+                newAverage /= cells.Count;
+            }
+        }
     }
 
     private void DivideAndConquerRecursive(int leftX, int rightX, int bottomY, int topY, int frontZ, int backZ)
@@ -268,6 +327,14 @@ public class MemDivideAndConquer3D : MonoBehaviour
             TrivialCase(rightX, bottomY, frontZ);
             TrivialCase(rightX, topY, frontZ);
         }
+        else if(leftX != rightX && bottomY == topY && frontZ != backZ)
+        {
+            //add 4
+            TrivialCase(leftX, topY, frontZ);
+            TrivialCase(leftX, topY, backZ);
+            TrivialCase(rightX, topY, frontZ);
+            TrivialCase(rightX, topY, backZ);
+        }
         
         else
         {
@@ -297,7 +364,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 DivideAndConquerRecursive(halfPointX + 1, rightX, bottomY, halfPointY, frontZ, halfPointZ); //RightBottomFront subdivision
                 DivideAndConquerRecursive(leftX, halfPointX, halfPointY + 1, topY, frontZ, halfPointZ); //LeftTopFront subdivision
                 DivideAndConquerRecursive(halfPointX + 1, rightX, halfPointY + 1, topY, frontZ, halfPointZ); //RightTopFront subdivision
-
+                
                 DivideAndConquerRecursive(leftX, halfPointX, bottomY, halfPointY, halfPointZ + 1, backZ); //LeftBottomBack subdivision
                 DivideAndConquerRecursive(halfPointX + 1, rightX, bottomY, halfPointY, halfPointZ + 1, backZ); //RightBottomBack subdivision
                 DivideAndConquerRecursive(leftX, halfPointX, halfPointY + 1, topY, halfPointZ + 1, backZ); //LeftTopBack subdivision
@@ -448,6 +515,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
 
         addGridPoint.x = x;
         addGridPoint.y = y;
+        addGridPoint.z = z;
         cells[seedID].points.Add(addGridPoint);
     }
 
@@ -457,6 +525,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
         int pointX;
         int pointY;
         int pointZ;
+        int tempId = -1;
         bool onRim;
 
         int x, y, z;
@@ -471,29 +540,50 @@ public class MemDivideAndConquer3D : MonoBehaviour
                 pointY = cells[cellIndex].points[pointIndex].y;
                 pointZ = cells[cellIndex].points[pointIndex].z;
                 onRim = false;
-                if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = true;
+                //if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = true;
+                if (
+                    ((pointY == 0 || pointY == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
+                    ((pointX == 0 || pointX == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
+                    ((pointX == 0 || pointX == resolution - 1) && (pointY == 0 || pointY == resolution - 1))
+                    ) onRim = true;
+                else if (
+                    CheckCullForXYPlanes(pointX, pointY, pointZ) ||
+                    CheckCullForYZPlanes(pointX, pointY, pointZ) ||
+                    CheckCullForXZPlanes(pointX, pointY, pointZ)
+                    ) onRim = true;
+                else if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = false;
+                //Mangler at bibeholde dem på kanten hvor der er 2 der støder op til hinanden
                 else
                 {
                     for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
                     {
                         for (y = pointY - 1; y <= pointY + 1; y++) //Get neighbors on y-axis
                         {
-                            for (z = pointZ - 1; z >= pointZ + 1; z++) //Get neighbors on z-axis
+                            for (z = pointZ - 1; z <= pointZ + 1; z++) //Get neighbors on z-axis
                             {
                                 if (grid[x][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][y][z])
                                 {
-                                    onRim = true;
-                                    addGridPoint.x = pointX;
-                                    addGridPoint.y = pointY;
-                                    addGridPoint.z = pointZ;
+                                    if (tempId == -1)
+                                    {
+                                        tempId = grid[x][y][z];
+                                        //grid[x][y][z] = -1;
+                                    }
+                                    else if (tempId > -1 && grid[x][y][z] != tempId)
+                                    {
+                                        onRim = true;
+                                        addGridPoint.x = pointX;
+                                        addGridPoint.y = pointY;
+                                        addGridPoint.z = pointZ;
+                                        tempId = -1;
+                                    }
                                 }
                             }
-                            //if (grid[x][y] != null && grid[pointX][pointY] != grid[x][y]) onRim = true;
                         }
                     }
                 }
                 if (onRim)
                 {
+                    //tempId = -1;
                     newCellPointList.Add(addGridPoint);
                 }
                 else if (!onRim)
@@ -503,6 +593,68 @@ public class MemDivideAndConquer3D : MonoBehaviour
             }
             cells[cellIndex].points = newCellPointList;
         }
+    }
+    
+    private bool CheckCullForXYPlanes(int pointX, int pointY, int pointZ)
+    {
+        int x, y;
+        if(pointZ == 0 || pointZ == resolution - 1)
+        { 
+            for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
+            {
+                for (y = pointY - 1; y <= pointY + 1; y++) //Get neighbors on y-axis
+                {
+                    if (grid[x][y][pointZ] > -1 && grid[pointX][pointY][pointZ] != grid[x][y][pointZ])
+                    {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        return false;
+    }
+    
+    private bool CheckCullForYZPlanes(int pointX, int pointY, int pointZ)
+    {
+        int y, z;
+        if (pointX == 0 || pointX == resolution - 1)
+        {
+            for (y = pointY - 1; y <= pointY + 1; y++) 
+            {
+                for (z = pointZ - 1; z <= pointZ + 1; z++) 
+                {
+                    if (grid[pointX][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[pointX][y][z])
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        return false;
+    }
+    private bool CheckCullForXZPlanes(int pointX, int pointY, int pointZ)
+    {
+        int x, z;
+        if (pointY == 0 || pointY == resolution - 1)
+        {
+            for (x = pointX - 1; x <= pointX + 1; x++) 
+            {
+                for (z = pointZ - 1; z <= pointZ + 1; z++) 
+                {
+                    if (grid[x][pointY][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][pointY][z])
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        return false;
     }
 
     private bool CheckBaseCase(int seed1, int seed2, int seed3, int seed4, int seed5, int seed6, int seed7, int seed8)
