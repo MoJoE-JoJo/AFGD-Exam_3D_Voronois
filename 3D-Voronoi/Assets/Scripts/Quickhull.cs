@@ -15,7 +15,7 @@ public class Quickhull : MonoBehaviour
        faces =  GenerateInitialFaces(points[0].position, points[1].position, points[2].position, points[3].position);
     }
 
-    private class Face
+    public class Face
     {
         // points making the plane
         public Vector3 A { get; set; }
@@ -39,9 +39,8 @@ public class Quickhull : MonoBehaviour
             Debug.DrawLine(C, A, Color.red);
 
             //draw normal of the plane
-            var c = CenterPoint();
-            Debug.DrawLine(c, c + plane.normal, Color.green);
-
+            //var c = CenterPoint();
+            //Debug.DrawLine(c, c + plane.normal, Color.green);
         }
 
         private Vector3 CenterPoint()
