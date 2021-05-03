@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GK;
 
 public class Quickhull : MonoBehaviour
 {
@@ -12,7 +13,28 @@ public class Quickhull : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       faces =  GenerateInitialFaces(points[0].position, points[1].position, points[2].position, points[3].position);
+        var tmp = new ConvexHullCalculator();
+        List<Vector3> newList = new List<Vector3>();
+        foreach (var p in points)
+        {
+            newList.Add(p.position);
+        }
+
+
+        List<Vector3> verts = new List<Vector3>();
+        List<int> tris = new List<int>();
+        List<Vector3> normals = new List<Vector3>();
+
+        tmp.GenerateHull(newList, false, ref verts, ref tris, ref normals);
+
+        for (int i = 1; i < verts.Count; i++)
+        {
+            Debug.DrawLine(verts[i - 1], verts[i], Color.red, 200f);
+        }
+        Debug.DrawLine(verts[0], verts[verts.Count-1], Color.red, 200f);
+
+
+        Debug.Log("Done???");
     }
 
     public class Face
@@ -83,27 +105,5 @@ public class Quickhull : MonoBehaviour
     public void Run()
     {
 
-
-        //initial hull, select 4 points
-        // generate first 4 faces
-        //var planes = CreatePlanesBasedOn4points(points[0].position, points[1].position, points[2].position, points[3].position);
-
-        //foreach (var plane in planes)
-        //{
-        //    plane.
-        //}
-
-
-        // Find Point with highest Y
-        // Find Point with Lowest Y
-
-        // Find Point with highest X
-        // Find Point with Lowest X
-
-        //select a pair and create a line/plane between
-
-        // an edge and a face are the "same"  
-
-        //fat planes
     }
 }
