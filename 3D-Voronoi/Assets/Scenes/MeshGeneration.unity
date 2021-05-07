@@ -40641,6 +40641,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2039611268}
   - component: {fileID: 2039611266}
+  - component: {fileID: 2039611267}
   m_Layer: 0
   m_Name: Vertices
   m_TagString: Untagged
@@ -40672,6 +40673,31 @@ MonoBehaviour:
   - {fileID: 708621274}
   - {fileID: 1545363777}
   debugDraw: 1
+--- !u!114 &2039611267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2039611265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44171c965ce8ce34389ff21422c53cfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugGenerate: 0
+  cellVertices:
+  - {fileID: 1909300489}
+  - {fileID: 2120198845}
+  - {fileID: 1840518327}
+  - {fileID: 1329361083}
+  - {fileID: 1740634848}
+  - {fileID: 324915581}
+  - {fileID: 708621274}
+  - {fileID: 1545363777}
+  - {fileID: 2059365822}
+  - {fileID: 510155899}
+  cellId: 6
 --- !u!4 &2039611268
 Transform:
   m_ObjectHideFlags: 0

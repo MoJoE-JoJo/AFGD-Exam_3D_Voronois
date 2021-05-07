@@ -61,13 +61,15 @@ public class PlaneGenerator : MonoBehaviour
                 }
             }
 
+            /*
             if (searched.Contains(chain.Last.Value))
             {
                 //should only happen when a cycle has been detected and a plane created   
                 break;
             }
+            */
             
-            else if (cycleFound > -1)
+            if (cycleFound > -1)
             {
                 var chain1 = chain;
                 var chain2 = chains[cycleFound];
