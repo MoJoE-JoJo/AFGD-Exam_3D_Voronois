@@ -685,7 +685,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
         return returnID;
     }
 
-    private Vector3 GridPointCenter(int x, int y, int z)
+    public Vector3 GridPointCenter(int x, int y, int z)
     {
         return new Vector3(
         origin.x + (x * size / resolution) + 0.5f * size / resolution,
