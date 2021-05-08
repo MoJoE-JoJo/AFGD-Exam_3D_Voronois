@@ -40673,6 +40673,8 @@ MonoBehaviour:
   - {fileID: 708621274}
   - {fileID: 1545363777}
   debugDraw: 1
+  gv1: {fileID: 1909300489}
+  gv2: {fileID: 1909300489}
 --- !u!114 &2039611267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40686,6 +40688,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugGenerate: 0
+  debugDrawCenters: 0
+  debugMeshGenerate: 0
+  polyHedronMaterial: {fileID: 2100000, guid: a2519a44468a5d743a3fd9f5b85b7d83, type: 2}
   cellVertices:
   - {fileID: 1909300489}
   - {fileID: 2120198845}

@@ -6,26 +6,68 @@ using UnityEngine;
 public class PlaneGenerator : MonoBehaviour
 {
     public bool debugGenerate = false;
+    public bool debugDrawCenters = false;
+    public bool debugMeshGenerate = false;
+    public Material polyHedronMaterial;
     public List<GraphVertex> cellVertices;
     public int cellId;
+    private List<CellPlane> planes;
 
     public void Update()
     {
         if (debugGenerate)
         {
-            GeneratePlanesForCell(cellId, cellVertices);
+            planes = GeneratePlanesForCell(cellId, cellVertices);
+            Debug.Log(planes.Count);
             debugGenerate = false;
+        }
+        if (debugDrawCenters)
+        {
+            foreach(CellPlane cp in planes)
+            {
+                cp.DebugDrawCenter();
+            }
+        }
+        if (debugMeshGenerate)
+        {
+            debugMeshGenerate = false;
+            MeshGenerator.GenerateMesh(planes, cellId, polyHedronMaterial);
         }
     }
 
     public List<CellPlane> GeneratePlanesForCell(int cellId, List<GraphVertex> vertices)
     {
         //For each vertex run breadth first search, check for cycles, stop when a number of cycles equal to number of neighboors of the vertex
-        var planes3 = BreadthFirstSearch(cellId, vertices, vertices[0]);
-        
-        //cut duplicate planes
-        
-        return new List<CellPlane>();
+        var planes = new List<CellPlane>();
+        for(int i = 0; i < vertices.Count; i++)
+        {
+            var planes3 = BreadthFirstSearch(cellId, vertices, vertices[i]);
+            foreach(CellPlane planeIn3 in planes3)
+            {
+                var contained = false;
+                foreach(CellPlane plane in planes)
+                {
+                    if (planeIn3.PlaneEquals(plane))
+                    {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained) planes.Add(planeIn3);
+            }
+        }
+
+
+        for (int i = 0; i < planes.Count; i++)
+        {
+            if (!planes[i].CheckValidPlane())
+            {
+                planes.RemoveAt(i);
+                i--;
+            }
+        }
+
+        return planes;
     }
 
     private List<CellPlane> BreadthFirstSearch(int cellId, List<GraphVertex> graph, GraphVertex root)
@@ -68,7 +110,8 @@ public class PlaneGenerator : MonoBehaviour
                 break;
             }
             */
-            
+
+
             if (cycleFound > -1)
             {
                 var chain1 = chain;
