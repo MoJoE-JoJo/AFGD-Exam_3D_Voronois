@@ -10,7 +10,30 @@ public class MeshGenerator : MonoBehaviour
         Mesh polyHedronMesh = new Mesh();
         var cell = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>().cells[cellId];
 
-        GenerateSingleFace(planes[0], ref polyHedronMesh, cell.color);
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> tris = new List<int>();
+        for(int i = 0; i < planes.Count; i++)
+        {
+            GenerateSingleFace(planes[i], ref vertices, ref tris);
+        }
+
+        polyHedronMesh.vertices = vertices.ToArray();
+        polyHedronMesh.triangles = tris.ToArray();
+
+        //Set Normals, uvs, and color
+        Vector3[] normals = new Vector3[vertices.Count];
+        Vector2[] uv = new Vector2[vertices.Count];
+        Color[] colors = new Color[vertices.Count];
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            normals[i] = -Vector3.forward;
+            uv[i] = new Vector2(0, 0);
+            colors[i] = cell.color;
+        }
+        polyHedronMesh.normals = normals;
+        polyHedronMesh.uv = uv;
+        polyHedronMesh.colors = colors;
+
 
         var meshFilter = polyHedron.AddComponent<MeshFilter>();
         var meshRenderer = polyHedron.AddComponent<MeshRenderer>();
@@ -21,58 +44,47 @@ public class MeshGenerator : MonoBehaviour
 
     }
 
-    private static void GenerateSingleFace(CellPlane plane, ref Mesh mesh, Color color)
+    private static void GenerateSingleFace(CellPlane plane, ref List<Vector3> vertices, ref List<int> tris)
     {
-        Vector3[] vertices = new Vector3[plane.vertices.Count + 1];
+        Vector3[] vertexArray = new Vector3[plane.vertices.Count + 1];
         for(int i = 0; i <plane.vertices.Count; i++)
         {
-            vertices[i] = plane.vertices[i].position;
+            vertexArray[i] = plane.vertices[i].position;
         }
-        vertices[vertices.Length - 1] = plane.CenterPoint();
-
-        mesh.vertices = vertices;
+        vertexArray[vertexArray.Length - 1] = plane.CenterPoint();
 
         //int[] trisArray = new int[plane.vertices.Count * 2 * 3];
-        List<int> tris = new List<int>();
+        //List<int> trisArray = new List<int>();
 
-        for(int i = 0; i < vertices.Length-1; i++)
+        for(int i = 0; i < vertexArray.Length-1; i++)
         {
-            if(i == vertices.Length - 2)
+            if(i == vertexArray.Length - 2)
             {
-                tris.Add(i);
-                tris.Add(0);
-                tris.Add(vertices.Length - 1);
+                tris.Add(i + vertices.Count);
+                tris.Add(0 + vertices.Count);
+                tris.Add(vertexArray.Length - 1 + vertices.Count);
 
-                tris.Add(vertices.Length - 1);
-                tris.Add(0);
-                tris.Add(i);
+                tris.Add(vertexArray.Length - 1 + vertices.Count);
+                tris.Add(0 + vertices.Count);
+                tris.Add(i + vertices.Count);
             }
             else
             {
-                tris.Add(i);
-                tris.Add(i + 1);
-                tris.Add(vertices.Length - 1);
+                tris.Add(i + vertices.Count);
+                tris.Add(i + 1 + vertices.Count);
+                tris.Add(vertexArray.Length - 1 + vertices.Count);
 
-                tris.Add(vertices.Length - 1);
-                tris.Add(i + 1);
-                tris.Add(i);
+                tris.Add(vertexArray.Length - 1 + vertices.Count);
+                tris.Add(i + 1 + vertices.Count);
+                tris.Add(i + vertices.Count);
             }
         }
 
-        mesh.triangles = tris.ToArray();
-
-        Vector3[] normals = new Vector3[vertices.Length];
-        Vector2[] uv = new Vector2[vertices.Length];
-        Color[] colors = new Color[vertices.Length];
-        for (int i = 0; i <vertices.Length; i++)
+        foreach (Vector3 vertex in vertexArray)
         {
-            normals[i] = -Vector3.forward;
-            uv[i] = new Vector2(0, 0);
-            colors[i] = Color.green;
+            vertices.Add(vertex);
         }
-        mesh.normals = normals;
-        mesh.uv = uv;
-        mesh.colors = colors;
 
+        //mesh.triangles = tris.ToArray();
     }
 }
