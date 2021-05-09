@@ -90,6 +90,8 @@ public class Quickhull : MonoBehaviour
                 lst.Add(DAC.GridPointCenter(GP.x, GP.y, GP.z));
             }
 
+
+
             // QuickHull 
 
             var tmp = new ConvexHullCalculator();
