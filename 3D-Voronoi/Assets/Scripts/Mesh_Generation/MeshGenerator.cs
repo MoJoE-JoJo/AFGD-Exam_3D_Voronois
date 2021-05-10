@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeshGenerator : MonoBehaviour
+public class MeshGenerator
 {
     public static void GenerateMesh(List<CellPlane> planes, int cellId, Material polyHedronMaterial)
     {

@@ -11,15 +11,16 @@ public class MemDivideAndConquer3D : MonoBehaviour
     public DEBUGDRAWTYPE debugType = DEBUGDRAWTYPE.DRAWEDGE;
     private DnCDebugPoint debugPoint = new DnCDebugPoint();
 
-
+    /*
     [Header("Redraw")]
     public bool rerun;
+    */
 
     [Header("Algorithm Stuff")]
     private GridPoint addGridPoint = new GridPoint();
     //private Vector3 gridPointCenterVector = new Vector3();
-    [Range(0f, 1f)]
-    public List<Vector3> seedPoints;
+    //[Range(0f, 1f)]
+    private List<Vector3> seedPoints;
     public int resolution;
     private Vector3 origin;
 
@@ -31,12 +32,13 @@ public class MemDivideAndConquer3D : MonoBehaviour
 
     void Start()
     {
-        SetSeeds();
-        InitGrid();
-        DividAndConquer();
+        //SetSeeds();
+        //InitGrid();
+        //DividAndConquer();
     }
     private void Update()
     {
+        /*
         if (rerun)
         {
             rerun = false;
@@ -44,15 +46,22 @@ public class MemDivideAndConquer3D : MonoBehaviour
             InitGrid();
             DividAndConquer();
         }
+        */
         if (drawArea) DrawGridArea();
-        if (drawSeeds) DrawSeeds();
-        if (drawDivideAndConquer) DrawPointGrid();
+        if (drawSeeds && seedPoints != null) DrawSeeds();
+        if (drawDivideAndConquer && grid != null) DrawPointGrid();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (drawArea) DrawGridArea();
     }
 
     //----------DEBUGGING METHODS----------
     #region debugging
     private void DrawGridArea()
     {
+        origin = transform.position;
         //front points
         var rightBottomFront = origin;
         var leftTopFront = origin;
@@ -152,8 +161,15 @@ public class MemDivideAndConquer3D : MonoBehaviour
     #endregion
     //----------ALGORITHM METHODS----------
     #region algorithm
-    private void SetSeeds()
+    public void Run(List<Vector3> seeds)
     {
+        SetSeeds(seeds);
+        InitGrid();
+        DividAndConquer();
+    }
+    private void SetSeeds(List<Vector3> seeds)
+    {
+        seedPoints = seeds;
         origin = transform.position;
         cells = new List<VCell>();
         for (int i = 0; i < seedPoints.Count; i++)
@@ -230,67 +246,11 @@ public class MemDivideAndConquer3D : MonoBehaviour
         if (debugType == DEBUGDRAWTYPE.DRAWEDGE)
         {
             CullInnerPoints();
-            /*
-            int lastAverage = 0;
-            int newAverage = 0;
-            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-            {
-                lastAverage += cells[cellIndex].points.Count;
-            }
-            lastAverage /= cells.Count;
-
-            CullInnerPoints();
-            
-            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-            {
-                newAverage += cells[cellIndex].points.Count;
-            }
-            newAverage /= cells.Count;
-
-            while (newAverage/lastAverage < 0.95f)
-            {
-                lastAverage = newAverage;
-                CullInnerPoints();
-                for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-                {
-                    newAverage += cells[cellIndex].points.Count;
-                }
-                newAverage /= cells.Count;
-            }
-            */
         }
 
         else if (!drawDivideAndConquer)
         {
             CullInnerPoints();
-            /*
-            int lastAverage = 0;
-            int newAverage = 0;
-            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-            {
-                lastAverage += cells[cellIndex].points.Count;
-            }
-            lastAverage /= cells.Count;
-
-            CullInnerPoints();
-
-            for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-            {
-                newAverage += cells[cellIndex].points.Count;
-            }
-            newAverage /= cells.Count;
-
-            while (newAverage / lastAverage < 0.95f)
-            {
-                lastAverage = newAverage;
-                CullInnerPoints();
-                for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-                {
-                    newAverage += cells[cellIndex].points.Count;
-                }
-                newAverage /= cells.Count;
-            }
-            */
         }
     }
 
