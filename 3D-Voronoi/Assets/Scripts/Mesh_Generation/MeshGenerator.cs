@@ -17,6 +17,12 @@ public class MeshGenerator : MonoBehaviour
             GenerateSingleFace(planes[i], ref vertices, ref tris);
         }
 
+        polyHedron.transform.position = cell.seed;
+        for(int i = 0; i< vertices.Count; i++)
+        {
+            vertices[i] = vertices[i] - cell.seed;
+        }
+
         polyHedronMesh.vertices = vertices.ToArray();
         polyHedronMesh.triangles = tris.ToArray();
 
