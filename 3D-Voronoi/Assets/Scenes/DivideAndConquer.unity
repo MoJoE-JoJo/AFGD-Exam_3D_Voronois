@@ -40026,7 +40026,7 @@ MonoBehaviour:
   - {x: 5.51, y: 6.89, z: 0}
   - {x: 11.51, y: 7.48, z: 11.7}
   - {x: 3.8, y: 2.9, z: 0}
-  resolution: 20
+  resolution: 250
   size: 13
   cells: []
 --- !u!1 &812978281
