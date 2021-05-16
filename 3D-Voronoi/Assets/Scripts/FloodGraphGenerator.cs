@@ -8,12 +8,17 @@ public class FloodGraphGenerator : MonoBehaviour
 {
 
     [SerializeField] private MemDivideAndConquer3D DAC;
-    [SerializeField] private int combineNodeSearchrange = 2;
+    [SerializeField] private int combineRange = 2;
 
-
+    public bool debugDraw = true;
     [Header("Bool run button")]
     public bool run = false;
 
+
+    private GridPoint _gridPoint;
+    private List<Node> nodes;
+    private HashSet<GridPoint> visited;
+    private Queue<QueueElement> queue;
 
     // Start is called before the first frame update
     void Start()
@@ -21,33 +26,39 @@ public class FloodGraphGenerator : MonoBehaviour
 
     }
 
+    public void CombineNodes(Node best, Node worst)
+    {
+        best.Vertexes.UnionWith(worst.Vertexes);
+        best.Vertexes.Remove(worst);
+        best.Vertexes.Remove(best); //make sure best node does have ref to itself
+        // remove reference of worst in other nodes and replace with best
+        foreach (var item in best.Vertexes)
+        {
+            if (item.Vertexes.Contains(worst))
+            {
+                item.Vertexes.Remove(worst);
+                item.Vertexes.Add(best);
+            }
+        }
+        Debug.Log("done combining");
+    }
+
     public class Node
     {
         public GridPoint Point { get; set; }
-        public List<Edge> Edges { get; set; }
+        public HashSet<Node> Vertexes { get; set; }
         public int Priotity { get; set; }
 
         public Node(GridPoint p, int prio)
         {
             Point = p;
-            Edges = new List<Edge>();
+            Vertexes = new HashSet<Node>();
             Priotity = prio;
         }
 
-        public void Combine(Node n)
+        public override string ToString()
         {
-            foreach (Edge item in n.Edges)
-            {
-                if (item.To == n)
-                {
-                    item.To = this;
-                }
-                else if (item.From == n)
-                {
-                    item.From = this;
-                }
-                Edges.Add(item);
-            }
+            return $"({Point.x}, {Point.y}, {Point.z})";
         }
 
         public override bool Equals(object obj)
@@ -65,14 +76,7 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    public class Edge
-    {
-        public int CellID { get; set; }
-        public Node From { get; set; }
-        public Node To { get; set; }
-    }
-
-    public struct QueueElement
+    public class QueueElement
     {
         public GridPoint gridPoint;
         public Node prevNode;
@@ -88,36 +92,72 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    private List<Node> nodes;
-    private HashSet<GridPoint> visited;
-    private Queue<QueueElement> queue;
-
     private void Run()
     {
         visited = new HashSet<GridPoint>();
         nodes = new List<Node>();
         // for each cell created by Divide and conquer, start a flood
-        foreach (VCell cell in DAC.cells)
-        {
-            // reset queue and run flood
-            queue = new Queue<QueueElement>();
-            queue.Enqueue(new QueueElement { gridPoint = cell.points[0], prevNode = null });
-            visited.Add(cell.points[0]);
-            Flood(cell.id);
+        VCell cell = DAC.cells[0];
+        //foreach (VCell cell in DAC.cells)
+        //{
+        // === RUN PREFLOOD
+        queue = new Queue<QueueElement>();
+        queue.Enqueue(new QueueElement { gridPoint = cell.points[0], prevNode = null });
+        Node n = RunPreFlood(cell.id);
 
-            Debug.Log($"Done with cell -> {cell.id}");
-        }
+        Debug.Log("Preflood point found -> " + n.Point.x + " -> " + n.Point.y + " -> " + n.Point.z);
+
+        // === RESET QUEUE AND VISITED, then run flood from the first node found by preflood. 
+
+        queue = new Queue<QueueElement>();
+        visited = new HashSet<GridPoint>();
+        
+        var queueElement = new QueueElement { gridPoint = n.Point, prevNode = null };
+        queue.Enqueue(queueElement);
+        visited.Add(queueElement.gridPoint);
+        
+        Flood(cell.id);
+        Debug.Log($"Done with cell -> {cell.id}");
+        //}
 
         // DEBUG: draw balls for the nodes
-        int count = 0;
-        foreach (Node item in nodes)
+        if (debugDraw)
         {
-            var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
-            ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-            ball.gameObject.name = "" + count++;
-        }
+            int count = 0;
+            foreach (Node item in nodes)
+            {
+                var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
+                ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                ball.gameObject.name = count++ + ": " + item.ToString();
 
+                foreach (Node vertex in item.Vertexes)
+                {
+                    var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
+                    v.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                    v.gameObject.name = vertex.ToString();
+                    v.transform.parent = ball.transform;
+                }
+
+            }
+        }
+        Debug.Log($"Done with cell -> {cell.id}");
+    }
+
+    private Node RunPreFlood(int cellID)
+    {
+        while (queue.Count != 0)
+        {
+            QueueElement current = queue.Dequeue();
+
+            Node n = PreFlood(current, cellID);
+            if (n != null)
+            {
+                return n;
+            }
+        }
+        return null;
     }
 
 
@@ -131,23 +171,36 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    private void CheckSurroundingGridPoints(QueueElement queueElement, int cellID)
+    /// <summary>
+    /// Checks if the point p is withing range of the point gp
+    /// </summary>
+    /// <param name="gp"></param>
+    /// <param name="p"></param>
+    /// <param name="searchRange"></param>
+    /// <returns></returns>
+    private bool PointInRange(GridPoint gp, GridPoint p, int searchRange)
+    {
+        return p.x >= gp.x - searchRange && p.x <= gp.x + searchRange &&
+                    p.y >= gp.y - searchRange && p.y <= gp.y + searchRange &&
+                    p.z >= gp.z - searchRange && p.z <= gp.z + searchRange;
+    }
+
+    private void CheckSurroundingGridPoints(QueueElement queueEle, int cellID)
     {
         // Need to handle a few cases here, dont want to lookup outside the borders of the grid
-        GridPoint gp = queueElement.gridPoint;
+        GridPoint gp = queueEle.gridPoint;
 
         List<GridPoint> pointsToQueue = new List<GridPoint>();
         Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
 
-        // === Step 1: scan surround gridpoints for what there ID is 
-
-        for (int x = gp.x - 1; x <= gp.x + 1; x++)
+        // === Step 1: scan surround gridpoints for what their ID is 
+        int x, y, z, id;
+        for (x = gp.x - 1; x <= gp.x + 1; x++)
         {
-            for (int y = gp.y - 1; y <= gp.y + 1; y++)
+            for (y = gp.y - 1; y <= gp.y + 1; y++)
             {
-                for (int z = gp.z - 1; z <= gp.z + 1; z++)
+                for (z = gp.z - 1; z <= gp.z + 1; z++)
                 {
-                    int id;
                     try
                     {
                         id = DAC.grid[x][y][z];
@@ -165,12 +218,13 @@ public class FloodGraphGenerator : MonoBehaviour
                     else if (id == cellID) // same cellID as currently flooding from
                     {
                         // if gridpoint not visited, add to queue and visited
-                        GridPoint newGP = new GridPoint { x = x, y = y, z = z };
-                        if (!visited.Contains(newGP))
+                        _gridPoint.x = x;
+                        _gridPoint.y = y;
+                        _gridPoint.z = z;
+                        if (!visited.Contains(_gridPoint))
                         {
-                            visited.Add(newGP);
-                            pointsToQueue.Add(newGP);
-                            //queue.Enqueue(new QueueElement { gridPoint = newGP, queueElement.prevNode });
+                            visited.Add(_gridPoint);
+                            pointsToQueue.Add(_gridPoint);
                         }
                     }
                     else
@@ -191,68 +245,54 @@ public class FloodGraphGenerator : MonoBehaviour
         // === Step 2: based on how many found surrounding cells, do stuff
         // this also depends on if the current point is a corner or sidepoint. 
 
-        Node node = queueElement.prevNode;
+        Node newNode = queueEle.prevNode;
         bool nodeCreated = false;
         int prio = surroundingCells.Values.ToList().Sum();
         if (IsCornerPoint(gp))
         {
+            //override prio, to ensure corner point is kept
+            prio = int.MaxValue;
             // always create a new node in this case
             nodeCreated = true;
-            Node newNode = new Node(gp, prio);
-            if (node != null)
-            {
-                newNode.Edges.Add(new Edge { From = node, To = newNode, CellID = cellID });
-            }
-            node = newNode;
+            newNode = new Node(gp, prio);
         }
         else if (IsOnSideLine(gp))
         {
+            // if on side line, give a boost to prio
             // create new node if 1 or more different cell types are near
             if (surroundingCells.Keys.Count >= 1)
             {
+                prio += 5;
                 nodeCreated = true;
-                Node newNode = new Node(gp, prio);
-                if (node != null)
-                {
-                    newNode.Edges.Add(new Edge { From = newNode, To = node, CellID = cellID });
-                }
-                node = newNode;
+                newNode = new Node(gp, prio);
             }
         }
         else if (IsOnSidePlane(gp))
         {
+            // if on side plane, give a small boost to prio
             // create new node if 2 or more cells are near
             if (surroundingCells.Keys.Count >= 2)
             {
+                prio += 3;
                 nodeCreated = true;
-                Node newNode = new Node(gp, prio);
-                if (node != null)
-                {
-                    newNode.Edges.Add(new Edge { From = newNode, To = node, CellID = cellID });
-                }
-                node = newNode;
+                newNode = new Node(gp, prio);
             }
         }
         else
         {
-            // need to be at least 3 id around
+            // need to be at least 3 ids around to be a Node
             if (surroundingCells.Keys.Count >= 3)
             {
                 nodeCreated = true;
-                Node newNode = new Node(gp, prio);
-                if (node != null)
-                {
-                    newNode.Edges.Add(new Edge { From = newNode, To = node, CellID = cellID });
-                }
-                node = newNode;
+                newNode = new Node(gp, prio);
             }
         }
 
-        // find nearby nodes, if 
+        bool addNewNode = true;
+        // If a new node is supposed to be created here, look if any nodes are nearby, then combine the nodes into one
         if (nodeCreated)
         {
             List<Node> toDelete = new List<Node>();
-            bool foundNode = false;
             foreach (Node n in nodes)
             {
                 GridPoint p = n.Point;
@@ -260,64 +300,87 @@ public class FloodGraphGenerator : MonoBehaviour
                 {
                     continue;
                 }
-                // if node is near 
-                int offset = combineNodeSearchrange;
-                if (p.x >= gp.x - offset && p.x <= gp.x + offset &&
-                    p.y >= gp.y - offset && p.y <= gp.y + offset &&
-                    p.z >= gp.z - offset && p.z <= gp.z + offset)
+                // if node is nearby
+                if (PointInRange(gp, p, combineRange))
                 {
-                    foundNode = true;
-                    if (node.Priotity > n.Priotity) // new node is a better candidate
+                    if (newNode.Priotity > n.Priotity) // the new node is a better candidate, eat the nearby node n, and mark it for deletion
                     {
-                        node.Combine(n);
+                        CombineNodes(newNode, n);
                         toDelete.Add(n);
-                    }
-                }
-            }
-            if (foundNode)
-            {
-                if (toDelete.Count == 0)
-                {
-                    node = queueElement.prevNode;
-                    nodeCreated = false;
-                }
-                else
-                {
-                    nodes.Add(node);
-                    foreach (Node n in toDelete)
-                    {
-                        nodes.Remove(n);
-                    }
-                }
-            }
-            else //no nearby nodes found, just add to the list.
-            {
-                nodes.Add(node);
-            }
 
+                        //update queue elements that contains n, to point at newNode instead
+                        foreach (var item in queue)
+                        {
+                            if (item.prevNode == n)
+                            {
+                                item.prevNode = newNode;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // let the existing node, eat the new one, set bool to not create a new node
+
+                        nodeCreated = false;
+                        newNode = n;
+                        addNewNode = false;
+                        //queueEle.prevNode.Vertexes.Add(newNode);
+                        //newNode.Vertexes.Add(queueEle.prevNode);
+                    }
+                }
+            }
+            if (addNewNode)
+            {
+                if (queueEle.prevNode != null && !toDelete.Contains(queueEle.prevNode))
+                {
+                    queueEle.prevNode.Vertexes.Add(newNode);
+                    newNode.Vertexes.Add(queueEle.prevNode);
+                }
+                nodes.Add(newNode);
+            }
+            foreach (Node n in toDelete)
+            {
+                nodes.Remove(n);
+            }
+        }
+        // add new points to the queue
+        foreach (GridPoint item in pointsToQueue)
+        {
+            var queueElement = new QueueElement { gridPoint = item, prevNode = newNode };
+            queue.Enqueue(queueElement);
         }
 
-        // End cases: either we end in a point supposed to be a node, or not.
+        // If any elements in the queue are near the new node, update their prev node, since a new node has been created.  
+        if (nodeCreated || addNewNode)
+        {
+            foreach (var element in queue)
+            {
+                if (element.prevNode == newNode) continue;
+                if (PointInRange(newNode.Point, element.gridPoint, combineRange))
+                {
+                    element.prevNode = newNode;
+                }
+            }
+        }
 
-        //if final point: no new point to add to the queue, and queue is empty
-        if (pointsToQueue.Count == 0 && queue.Count == 0)
+        // final point cases (when the queue is empty): either we end in a point supposed to be a node, or not.
+        if (queue.Count == 0)
         {
             if (nodeCreated)
             {
                 //connect up with the newest Node 
-
                 Node newest = nodes[nodes.Count - 1];
                 Node secondNewest = nodes[nodes.Count - 2];
 
-                if (newest == queueElement.prevNode)
+                if (newest == queueEle.prevNode)
                 {
-                    Edge edge = new Edge { CellID = cellID, From = node, To = secondNewest };
-                    node.Edges.Add(edge);
+                    newNode.Vertexes.Add(secondNewest);
+                    secondNewest.Vertexes.Add(newNode);
                 }
                 else
                 {
-                    Edge edge = new Edge { CellID = cellID, From = node, To = newest };
-                    node.Edges.Add(edge);
+                    newNode.Vertexes.Add(newest);
+                    newest.Vertexes.Add(newNode);
                 }
             }
             else // not a node point
@@ -326,18 +389,9 @@ public class FloodGraphGenerator : MonoBehaviour
                 Node newest = nodes[nodes.Count - 1];
                 Node secondNewest = nodes[nodes.Count - 2];
 
-                Edge edge = new Edge { CellID = cellID, From = newest, To = secondNewest };
-                newest.Edges.Add(edge);
-
-                //does it need to go both ways?
-                secondNewest.Edges.Add(edge);
-
+                newest.Vertexes.Add(secondNewest);
+                secondNewest.Vertexes.Add(newest);
             }
-        }
-        // add points to the queue, 
-        foreach (GridPoint item in pointsToQueue)
-        {
-            queue.Enqueue(new QueueElement { gridPoint = item, prevNode = node });
         }
     }
 
@@ -368,4 +422,108 @@ public class FloodGraphGenerator : MonoBehaviour
         return p.x == 0 || p.x == maxIndex || p.y == 0 || p.y == maxIndex || p.z == 0 || p.z == maxIndex;
 
     }
+
+    private Node PreFlood(QueueElement qe, int cellID)
+    {
+        // Need to handle a few cases here, dont want to lookup outside the borders of the grid
+        GridPoint gp = qe.gridPoint;
+
+        List<GridPoint> pointsToQueue = new List<GridPoint>();
+        Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
+
+        // === Step 1: scan surround gridpoints for what their ID is 
+        int x, y, z, id;
+        for (x = gp.x - 1; x <= gp.x + 1; x++)
+        {
+            for (y = gp.y - 1; y <= gp.y + 1; y++)
+            {
+                for (z = gp.z - 1; z <= gp.z + 1; z++)
+                {
+                    try
+                    {
+                        id = DAC.grid[x][y][z];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        continue;
+                    }
+
+                    if (id == -1)
+                    {
+                        //ignore this one
+                        continue;
+                    }
+                    else if (id == cellID) // same cellID as currently flooding from
+                    {
+                        // if gridpoint not visited, add to queue and visited
+                        _gridPoint.x = x;
+                        _gridPoint.y = y;
+                        _gridPoint.z = z;
+                        if (!visited.Contains(_gridPoint))
+                        {
+                            visited.Add(_gridPoint);
+                            pointsToQueue.Add(_gridPoint);
+                        }
+                    }
+                    else
+                    {
+                        if (surroundingCells.ContainsKey(id))
+                        {
+                            surroundingCells[id] = surroundingCells[id] + 1;
+                        }
+                        else
+                        {
+                            surroundingCells.Add(id, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        // === Step 2: based on how many found surrounding cells, do stuff
+        // this also depends on if the current point is a corner or sidepoint. 
+
+        Node newNode = qe.prevNode;
+        bool nodeCreated = false;
+        int prio = surroundingCells.Values.ToList().Sum();
+        if (IsCornerPoint(gp))
+        {
+            // always create a new node in this case
+            newNode = new Node(gp, prio);
+        }
+        else if (IsOnSideLine(gp))
+        {
+            // create new node if 1 or more different cell types are near
+            if (surroundingCells.Keys.Count >= 1)
+            {
+                newNode = new Node(gp, prio);
+            }
+        }
+        else if (IsOnSidePlane(gp))
+        {
+            // create new node if 2 or more cells are near
+            if (surroundingCells.Keys.Count >= 2)
+            {
+                newNode = new Node(gp, prio);
+            }
+        }
+        else
+        {
+            // need to be at least 3 ids around to be a Node
+            if (surroundingCells.Keys.Count >= 3)
+            {
+                newNode = new Node(gp, prio);
+            }
+        }
+
+        foreach (GridPoint item in pointsToQueue)
+        {
+            var queueElement = new QueueElement { gridPoint = item, prevNode = newNode };
+            queue.Enqueue(queueElement);
+        }
+
+        return newNode;
+    }
+
+
 }

@@ -533,7 +533,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DAC: {fileID: 975746381}
-  combineNodeSearchrange: 2
+  combineRange: 2
+  debugDraw: 1
   run: 0
 --- !u!4 &208308000
 Transform:
