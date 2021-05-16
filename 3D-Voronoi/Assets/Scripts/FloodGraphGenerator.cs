@@ -16,7 +16,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
 
     private GridPoint _gridPoint;
-    private List<Node> vertices;
+    private HashSet<Node> vertices;
     private HashSet<GridPoint> visited;
     private Queue<GridPoint> queue;
 
@@ -97,7 +97,7 @@ public class FloodGraphGenerator : MonoBehaviour
     private void Run()
     {
         visited = new HashSet<GridPoint>();
-        vertices = new List<Node>();
+        vertices = new HashSet<Node>();
         // for each cell created by Divide and conquer, start a flood
         foreach (VCell cell in DAC.cells)
         {
@@ -135,14 +135,14 @@ public class FloodGraphGenerator : MonoBehaviour
             ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
             ball.gameObject.name = count++ + ": " + item.ToString();
 
-            //foreach (Node vertex in item.Vertexes)
-            //{
-            //    var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //    v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
-            //    v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            //    v.gameObject.name = vertex.ToString();
-            //    v.transform.parent = ball.transform;
-            //}
+            foreach (Node vertex in item.Connections)
+            {
+                var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
+                v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                v.gameObject.name = vertex.ToString();
+                v.transform.parent = ball.transform;
+            }
         }
     }
 
@@ -170,14 +170,16 @@ public class FloodGraphGenerator : MonoBehaviour
         visited.Add(item.Point);
 
         int x, y, z, id;
-        do
+        while (ConnectionQueue.Count != 0)
         {
             var element = ConnectionQueue.Dequeue();
             GridPoint gp = element.GridPoint;
             bool found = element.FoundPoint;
 
-            if (found) continue;
-
+            if (found)
+            {
+                continue;
+            }
             for (x = gp.x - 1; x <= gp.x + 1; x++)
             {
                 for (y = gp.y - 1; y <= gp.y + 1; y++)
@@ -203,9 +205,23 @@ public class FloodGraphGenerator : MonoBehaviour
                         {
                             if (IsPointNode(_gridPoint))
                             {
+                                if (item.Point.x == 99 && item.Point.y == 0 && item.Point.z == 0)
+                                {
+                                    Debug.Log("DEBUG");
+                                }
+
+                                Node n = vertices.Where(p => p.Point == _gridPoint).First();
                                 found = true;
                                 //add connection to origin
-                                item.Connections.Add(vertices.Where(p => p.Point == _gridPoint).First());
+                                item.Connections.Add(n);
+
+                                foreach (var ele in ConnectionQueue)
+                                {
+                                    if (PointInRange(_gridPoint, ele.GridPoint, combineRange+1))
+                                    {
+                                        ele.FoundPoint = true;
+                                    }
+                                }
                             }
                             else
                             {
@@ -216,10 +232,8 @@ public class FloodGraphGenerator : MonoBehaviour
                     }
                 }
             }
-        } while (ConnectionQueue.Count != 0);
+        }
     }
-
-
 
 private void CheckSurroundingGridPoints(GridPoint gp, int cellID)
 {
@@ -374,7 +388,7 @@ private void CheckSurroundingGridPoints(GridPoint gp, int cellID)
 }
 
 /// <summary>
-/// Checks if the point p is withing range of the point gp
+/// Checks if the point p is within the searchrange of the point gp
 /// </summary>
 /// <param name="gp"></param>
 /// <param name="p"></param>
