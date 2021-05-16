@@ -18,6 +18,7 @@ public class FloodGraphGenerator : MonoBehaviour
     private GridPoint _gridPoint;
     private List<Node> nodes;
     private HashSet<GridPoint> visited;
+    private Dictionary<GridPoint, Node> pointToPrevnodeDict; //keep track of what was prev when looking at gridpoints.
     private Queue<QueueElement> queue;
 
     // Start is called before the first frame update
@@ -96,53 +97,58 @@ public class FloodGraphGenerator : MonoBehaviour
     {
         visited = new HashSet<GridPoint>();
         nodes = new List<Node>();
+        pointToPrevnodeDict = new Dictionary<GridPoint, Node>();
         // for each cell created by Divide and conquer, start a flood
-        VCell cell = DAC.cells[0];
-        //foreach (VCell cell in DAC.cells)
-        //{
-        // === RUN PREFLOOD
-        queue = new Queue<QueueElement>();
-        queue.Enqueue(new QueueElement { gridPoint = cell.points[0], prevNode = null });
-        Node n = RunPreFlood(cell.id);
+        //VCell cell = DAC.cells[0];
+        foreach (VCell cell in DAC.cells)
+        {
+            // === RUN PREFLOOD
+            queue = new Queue<QueueElement>();
+            queue.Enqueue(new QueueElement { gridPoint = cell.points[0], prevNode = null });
+            Node n = RunPreFlood(cell.id);
 
-        Debug.Log("Preflood point found -> " + n.Point.x + " -> " + n.Point.y + " -> " + n.Point.z);
+            Debug.Log("Preflood point found -> " + n.Point.x + " -> " + n.Point.y + " -> " + n.Point.z);
 
-        // === RESET QUEUE AND VISITED, then run flood from the first node found by preflood. 
+            // === RESET QUEUE AND VISITED, then run flood from the first node found by preflood. 
 
-        queue = new Queue<QueueElement>();
-        visited = new HashSet<GridPoint>();
-        
-        var queueElement = new QueueElement { gridPoint = n.Point, prevNode = null };
-        queue.Enqueue(queueElement);
-        visited.Add(queueElement.gridPoint);
-        
-        Flood(cell.id);
-        Debug.Log($"Done with cell -> {cell.id}");
-        //}
+            queue = new Queue<QueueElement>();
+            visited = new HashSet<GridPoint>();
+            pointToPrevnodeDict = new Dictionary<GridPoint, Node>();
 
-        // DEBUG: draw balls for the nodes
+            var queueElement = new QueueElement { gridPoint = n.Point, prevNode = null };
+            queue.Enqueue(queueElement);
+            visited.Add(queueElement.gridPoint);
+
+            Flood(cell.id);
+            Debug.Log($"Done with cell -> {cell.id}");
+        }
+
+        // DEBUG: draw balls for the nodes and small balls for "edges"
         if (debugDraw)
         {
-            int count = 0;
-            foreach (Node item in nodes)
+            DebugDraw();
+        }
+    }
+
+    private void DebugDraw()
+    {
+        int count = 0;
+        foreach (Node item in nodes)
+        {
+            var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
+            ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            ball.gameObject.name = count++ + ": " + item.ToString();
+
+            foreach (Node vertex in item.Vertexes)
             {
-                var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
-                ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-                ball.gameObject.name = count++ + ": " + item.ToString();
-
-                foreach (Node vertex in item.Vertexes)
-                {
-                    var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
-                    v.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-                    v.gameObject.name = vertex.ToString();
-                    v.transform.parent = ball.transform;
-                }
-
+                var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
+                v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                v.gameObject.name = vertex.ToString();
+                v.transform.parent = ball.transform;
             }
         }
-        Debug.Log($"Done with cell -> {cell.id}");
     }
 
     private Node RunPreFlood(int cellID)
@@ -190,7 +196,11 @@ public class FloodGraphGenerator : MonoBehaviour
         // Need to handle a few cases here, dont want to lookup outside the borders of the grid
         GridPoint gp = queueEle.gridPoint;
 
+        // update grid point dictionary 
+        pointToPrevnodeDict.Add(gp, queueEle.prevNode);
+
         List<GridPoint> pointsToQueue = new List<GridPoint>();
+        List<GridPoint> pointsWithSameCellId = new List<GridPoint>();
         Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
 
         // === Step 1: scan surround gridpoints for what their ID is 
@@ -225,6 +235,10 @@ public class FloodGraphGenerator : MonoBehaviour
                         {
                             visited.Add(_gridPoint);
                             pointsToQueue.Add(_gridPoint);
+                        }
+                        else
+                        {
+                            pointsWithSameCellId.Add(_gridPoint);
                         }
                     }
                     else
@@ -315,6 +329,18 @@ public class FloodGraphGenerator : MonoBehaviour
                             {
                                 item.prevNode = newNode;
                             }
+
+                        }
+                        if (pointToPrevnodeDict.TryGetValue(n.Point, out Node nod))
+                        {
+                            queueEle.prevNode = nod;
+                        }
+
+                        // update prevs in dict
+                        // THIS IS SUPER INEFFECTIVE!!! if time allows optimize. Could keep a map from int to nodes or something like that
+                        foreach (var item in pointToPrevnodeDict.Where(x => x.Value == n).ToList())
+                        {
+                            pointToPrevnodeDict[item.Key] = newNode;
                         }
                     }
                     else
@@ -343,6 +369,7 @@ public class FloodGraphGenerator : MonoBehaviour
                 nodes.Remove(n);
             }
         }
+
         // add new points to the queue
         foreach (GridPoint item in pointsToQueue)
         {
@@ -393,7 +420,41 @@ public class FloodGraphGenerator : MonoBehaviour
                 secondNewest.Vertexes.Add(newest);
             }
         }
+        // else if pointsToQueue is zero means that the flooding should have "reached itself" so check if we need to combine the two prev from each side
+        else if (pointsToQueue.Count == 0)
+        {
+            //check surronding points for their prevNode and make connection between them. 
+            foreach (var item in pointsWithSameCellId)
+            {
+                if (IsPointNode(item) || IsPointInQueue(item)) continue;
+
+                bool success = pointToPrevnodeDict.TryGetValue(item, out Node n1);
+                if (!success) continue;
+                if(n1 == null) continue;
+                if (queueEle.prevNode == null) continue;
+
+                if (pointToPrevnodeDict[item] != queueEle.prevNode)
+                {
+                    Node n2 = queueEle.prevNode;
+
+                    Debug.Log($"Making edge between {n1} and {n2}");
+                    n1.Vertexes.Add(n2);
+                    n2.Vertexes.Add(n1);
+                }
+            }
+        }
     }
+
+    private bool IsPointInQueue(GridPoint gp)
+    {
+        return queue.Where(x => x.gridPoint == gp).Any();
+    }
+
+    private bool IsPointNode(GridPoint gp)
+    {
+        return nodes.Where(x => x.Point == gp).Any();
+    }
+
 
     private bool IsCornerPoint(GridPoint p)
     {
