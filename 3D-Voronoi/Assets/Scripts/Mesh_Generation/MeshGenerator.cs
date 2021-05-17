@@ -55,7 +55,7 @@ public class MeshGenerator : MonoBehaviour
         Vector3[] vertexArray = new Vector3[plane.vertices.Count + 1];
         for(int i = 0; i <plane.vertices.Count; i++)
         {
-            vertexArray[i] = plane.vertices[i].position;
+            vertexArray[i] = plane.vertices[i].Position;
         }
         vertexArray[vertexArray.Length - 1] = plane.CenterPoint();
 
