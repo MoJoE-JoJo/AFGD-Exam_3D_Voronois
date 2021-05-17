@@ -18,7 +18,6 @@ public class MemDivideAndConquer3D : MonoBehaviour
     [Header("Algorithm Stuff")]
     private GridPoint addGridPoint = new GridPoint();
     //private Vector3 gridPointCenterVector = new Vector3();
-    [Range(0f, 1f)]
     public List<Vector3> seedPoints;
     public int resolution;
     private Vector3 origin;

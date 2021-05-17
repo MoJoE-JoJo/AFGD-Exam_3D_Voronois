@@ -48,6 +48,8 @@ public class MeshGenerator : MonoBehaviour
 
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
 
+        Debug.Log(tris.Count);
+
     }
 
     private static void GenerateSingleFace(CellPlane plane, ref List<Vector3> vertices, ref List<int> tris)

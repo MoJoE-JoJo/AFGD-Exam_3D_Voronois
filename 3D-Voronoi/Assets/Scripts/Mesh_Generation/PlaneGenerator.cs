@@ -90,7 +90,7 @@ public class PlaneGenerator : MonoBehaviour
         }
         searched.Add(root);
 
-        while (frontier.Count > 0 && planes.Count < targetNumberOfPlanes)
+        while (frontier.Count > 0 /*&& planes.Count < targetNumberOfPlanes*/)
         {
             LinkedList<GraphVertex> chain = frontier.Dequeue();
             var cycleFound = -1;
