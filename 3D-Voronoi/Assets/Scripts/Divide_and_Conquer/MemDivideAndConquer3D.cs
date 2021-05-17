@@ -18,6 +18,7 @@ public class MemDivideAndConquer3D : MonoBehaviour
 
     [Header("Algorithm Stuff")]
     private GridPoint addGridPoint = new GridPoint();
+    private Vector3 pointVector = new Vector3();
     //private Vector3 gridPointCenterVector = new Vector3();
     //[Range(0f, 1f)]
     private List<Vector3> seedPoints;
@@ -647,6 +648,12 @@ public class MemDivideAndConquer3D : MonoBehaviour
 
     public Vector3 GridPointCenter(int x, int y, int z)
     {
+        /*
+        pointVector.x = origin.x + (x * size / resolution) + 0.5f * size / resolution;
+        pointVector.y = origin.y + (y * size / resolution) + 0.5f * size / resolution;
+        pointVector.z = origin.y + (z * size / resolution) + 0.5f * size / resolution;
+        return pointVector;
+        */
         return new Vector3(
         origin.x + (x * size / resolution) + 0.5f * size / resolution,
         origin.y + (y * size / resolution) + 0.5f * size / resolution,
