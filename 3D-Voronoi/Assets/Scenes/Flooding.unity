@@ -535,7 +535,8 @@ MonoBehaviour:
   DAC: {fileID: 975746381}
   combineRange: 2
   planeGenerator: {fileID: 1869863653}
-  debugDraw: 0
+  mat: {fileID: 2100000, guid: a2519a44468a5d743a3fd9f5b85b7d83, type: 2}
+  debugDraw: 1
   run: 0
 --- !u!4 &208308000
 Transform:
@@ -43740,7 +43741,6 @@ MonoBehaviour:
   debugDrawCenters: 0
   debugMeshGenerate: 0
   polyHedronMaterial: {fileID: 2100000, guid: a2519a44468a5d743a3fd9f5b85b7d83, type: 2}
-  cellVertices: []
   cellId: 0
 --- !u!4 &1869863654
 Transform:

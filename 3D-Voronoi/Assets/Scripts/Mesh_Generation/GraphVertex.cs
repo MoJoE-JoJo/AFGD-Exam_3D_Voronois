@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GraphVertex : MonoBehaviour
+public class GraphVertex
 {
     public List<int> cellIds;
     public List<GraphVertex> connectedVertices;
     public Vector3 Position { get; set; }
     public GridPoint Point { get; set; }
-    private MemDivideAndConquer3D memDnC;
+    //private MemDivideAndConquer3D memDnC;
     public int Priotity { get; set; }
 
     public GraphVertex(GridPoint p, int prio, int cellID)
@@ -19,18 +19,18 @@ public class GraphVertex : MonoBehaviour
         Priotity = prio;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        Position = transform.position;
-        memDnC = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>();
-    }
+    //// Start is called before the first frame update
+    //void Start()
+    //{
+    //    Position = transform.position;
+    //    memDnC = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>();
+    //}
 
-    // Update is called once per frame
-    void Update()
-    {
+    //// Update is called once per frame
+    //void Update()
+    //{
 
-    }
+    //}
 
     // These function is to make the public lists work like a set
     public void AddCellID(int id)
@@ -43,19 +43,19 @@ public class GraphVertex : MonoBehaviour
         if (!connectedVertices.Contains(v)) connectedVertices.Add(v);
     }
 
-    public void DebugDraw()
-    {
-        for (int vertex = 0; vertex < connectedVertices.Count; vertex++)
-        {
-            for (int cellIdIndex = 0; cellIdIndex < cellIds.Count; cellIdIndex++)
-            {
-                if (connectedVertices[vertex].cellIds.Contains(cellIds[cellIdIndex]))
-                {
-                    Debug.DrawLine(Position, connectedVertices[vertex].Position, memDnC.cells[cellIds[cellIdIndex]].color);
-                }
-            }
-        }
-    }
+    //public void DebugDraw()
+    //{
+    //    for (int vertex = 0; vertex < connectedVertices.Count; vertex++)
+    //    {
+    //        for (int cellIdIndex = 0; cellIdIndex < cellIds.Count; cellIdIndex++)
+    //        {
+    //            if (connectedVertices[vertex].cellIds.Contains(cellIds[cellIdIndex]))
+    //            {
+    //                Debug.DrawLine(Position, connectedVertices[vertex].Position, memDnC.cells[cellIds[cellIdIndex]].color);
+    //            }
+    //        }
+    //    }
+    //}
 
     public override string ToString()
     {

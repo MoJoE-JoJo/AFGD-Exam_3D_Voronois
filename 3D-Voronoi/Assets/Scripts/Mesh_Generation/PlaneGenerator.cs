@@ -66,7 +66,6 @@ public class PlaneGenerator : MonoBehaviour
                 i--;
             }
         }
-
         return planes;
     }
 

@@ -10,8 +10,7 @@ public class FloodGraphGenerator : MonoBehaviour
     [SerializeField] private MemDivideAndConquer3D DAC;
     [SerializeField] private int combineRange = 2;
     public PlaneGenerator planeGenerator;
-
-
+    public Material mat;
     public bool debugDraw = true;
     [Header("Bool run button")]
     public bool run = false;
@@ -30,6 +29,12 @@ public class FloodGraphGenerator : MonoBehaviour
 
     public void CombineNodes(GraphVertex best, GraphVertex worst)
     {
+        var gp = best.Point;
+        if (gp.x == 40 && gp.y == 37 && gp.z == 30)
+        {
+            Debug.Log("poop");
+        }
+
         // Take the Cell IDs of the other vertex
         foreach (int item in worst.cellIds)
         {
@@ -44,7 +49,22 @@ public class FloodGraphGenerator : MonoBehaviour
         {
             run = false;
             Run();
-            planeGenerator.cellVertices = vertices.ToList();
+
+            foreach (VCell item in DAC.cells)
+            {
+                var cellVertices = vertices.Where(x => x.cellIds.Contains(item.id)).ToList();
+
+                var planes = planeGenerator.GeneratePlanesForCell(item.id, cellVertices);
+
+                foreach (var p in planes)
+                {
+                    p.DebugDrawCenter();
+                }
+
+                MeshGenerator.GenerateMesh(planes, item.id, mat);
+            }
+
+            //planeGenerator.GeneratePlanesForCell(0, cellid0.ToList());
         }
     }
 
@@ -131,7 +151,9 @@ public class FloodGraphGenerator : MonoBehaviour
             GridPoint gp = element.GridPoint;
             bool found = element.FoundPoint;
 
-            if (found)
+            // The max amount of connections a vertex can have is 4, so stop when 4 is found
+            // This might cause problems in certain cases???
+            if (found || item.connectedVertices.Count >= 4) 
             {
                 continue;
             }
@@ -165,16 +187,22 @@ public class FloodGraphGenerator : MonoBehaviour
                                 found = true;
                                 //add connection to origin
                                 item.AddConnection(n);
+                                int offset = 2;
+                                if (AreOtherVerticesWithinrange(_gridPoint, combineRange + offset))
+                                {
+                                    Debug.Log("WOLLOWO");
+                                    offset = 0;
+                                }
 
                                 foreach (var ele in ConnectionQueue)
                                 {
-                                    if (PointInRange(_gridPoint, ele.GridPoint, combineRange + 1))
+                                    if (PointInRange(_gridPoint, ele.GridPoint, combineRange + offset)) 
                                     {
                                         ele.FoundPoint = true;
                                     }
                                 }
                             }
-                            else
+                            else if (!IsPointNode(_gridPoint))
                             {
                                 visited.Add(_gridPoint);
                                 ConnectionQueue.Enqueue(new QueueElement { GridPoint = _gridPoint, FoundPoint = found });
@@ -286,14 +314,20 @@ public class FloodGraphGenerator : MonoBehaviour
             }
         }
 
-        if (createNewNode)
-        {
-            newNode = new GraphVertex(gp, prio, cellID);
-        }
-
         // If a new node is supposed to be created here, look if any nodes are nearby, then combine the nodes into one
         if (createNewNode)
         {
+            if (gp.x == 40 && gp.y == 37 && gp.z == 30)
+            {
+                Debug.Log("poop");
+            }
+
+            newNode = new GraphVertex(gp, prio, cellID);
+            foreach (int item in surroundingCells.Keys)
+            {
+                newNode.AddCellID(item);
+            }
+
             List<GraphVertex> toDelete = new List<GraphVertex>();
             foreach (GraphVertex vertex in vertices)
             {
@@ -307,13 +341,13 @@ public class FloodGraphGenerator : MonoBehaviour
                 {
                     if (newNode.Priotity > vertex.Priotity) // the new node is a better candidate, eat the nearby node n, and mark it for deletion
                     {
-                        CombineNodes(newNode, vertex);
+                        //CombineNodes(newNode, vertex);
                         toDelete.Add(vertex);
                     }
                     else
                     {
                         // let the existing node, eat the new one, set bool to not create a new node
-                        CombineNodes(vertex, newNode);
+                        //CombineNodes(vertex, newNode);
 
                         createNewNode = false;
                         newNode = vertex;
@@ -349,6 +383,23 @@ public class FloodGraphGenerator : MonoBehaviour
         return p.x >= gp.x - searchRange && p.x <= gp.x + searchRange &&
                     p.y >= gp.y - searchRange && p.y <= gp.y + searchRange &&
                     p.z >= gp.z - searchRange && p.z <= gp.z + searchRange;
+    }
+
+    private bool AreOtherVerticesWithinrange(GridPoint gp, int combineRange)
+    {
+        bool res = false;
+        foreach (var item in vertices)
+        {
+            var p = item.Point;
+            if (p == gp) continue;
+            if (p.x >= gp.x - combineRange && p.x <= gp.x + combineRange &&
+                   p.y >= gp.y - combineRange && p.y <= gp.y + combineRange &&
+                   p.z >= gp.z - combineRange && p.z <= gp.z + combineRange)
+            {
+                res = true;
+            }
+        }
+        return res;
     }
 
     private bool IsPointInQueue(GridPoint gp)
