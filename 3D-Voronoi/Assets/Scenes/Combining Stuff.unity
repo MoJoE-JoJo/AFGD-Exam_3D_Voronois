@@ -1902,7 +1902,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   run: 0
   seedGenerator: {fileID: 859905455}
-  divideAndConquer: {fileID: 975746381}
+  divideAndConquer: {fileID: 975746382}
   floodGraphGenerator: {fileID: 208307999}
   renderStep: {fileID: 0}
 --- !u!1 &897662141
@@ -2390,6 +2390,7 @@ GameObject:
   m_Component:
   - component: {fileID: 975746383}
   - component: {fileID: 975746381}
+  - component: {fileID: 975746382}
   m_Layer: 0
   m_Name: Area
   m_TagString: Untagged
@@ -2407,6 +2408,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca0f462769cbf0f47a1f0baae590e81d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drawArea: 0
+  drawSeeds: 0
+  drawDivideAndConquer: 1
+  debugType: 1
+  resolution: 20
+  size: 13
+  cells: []
+--- !u!114 &975746382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975746380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 373b4d8e519da004098efc13e7c983fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   drawArea: 0

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MemDivideAndConquer3D : DivideAndConquer
+public class IterativeDivideAndConquer : DivideAndConquer
 {
     [Header("Debugging")]
     public bool drawArea = false;
@@ -19,6 +19,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
     [Header("Algorithm Stuff")]
     private GridPoint addGridPoint = new GridPoint();
     private Vector3 pointVector = new Vector3();
+    private Queue<(int, int, int, int, int, int)> pointsToCheck = new Queue<(int, int, int, int, int, int)>();
     //private Vector3 gridPointCenterVector = new Vector3();
     //[Range(0f, 1f)]
     private List<Vector3> seedPoints;
@@ -194,7 +195,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
         for (int i = 0; i < grid.Length; i++)
         {
             grid[i] = new int[resolution][];
-            for (j = 0; j <grid[i].Length; j++)
+            for (j = 0; j < grid[i].Length; j++)
             {
                 grid[i][j] = new int[resolution];
             }
@@ -203,7 +204,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
         {
             for (y = 0; y < grid[x].Length; y++)
             {
-                for(z = 0; z < grid[x][y].Length; z++)
+                for (z = 0; z < grid[x][y].Length; z++)
                 {
                     grid[x][y][z] = -1;
                 }
@@ -234,15 +235,106 @@ public class MemDivideAndConquer3D : DivideAndConquer
         else
         {
             int halfPoint = (resolution - 1) / 2;
-            DivideAndConquerRecursive(0, halfPoint, 0, halfPoint, 0, halfPoint); //LeftBottomFront subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), 0, halfPoint, 0, halfPoint); //RightBottomFront subdivision
-            DivideAndConquerRecursive(0, halfPoint, halfPoint + 1, (resolution - 1), 0, halfPoint); //LeftTopFront subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), 0, halfPoint); //RightTopFront subdivision
+            pointsToCheck.Enqueue((0, halfPoint, 0, halfPoint, 0, halfPoint));
+            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), 0, halfPoint, 0, halfPoint));
+            pointsToCheck.Enqueue((0, halfPoint, halfPoint + 1, (resolution - 1), 0, halfPoint));
+            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), 0, halfPoint));
 
-            DivideAndConquerRecursive(0, halfPoint, 0, halfPoint, halfPoint + 1, (resolution - 1)); //LeftBottomBack subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), 0, halfPoint, halfPoint + 1, (resolution - 1)); //RightBottomBack subdivision
-            DivideAndConquerRecursive(0, halfPoint, halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //LeftTopBack subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //RightTopBack subdivision
+            pointsToCheck.Enqueue((0, halfPoint, 0, halfPoint, halfPoint + 1, (resolution - 1)));
+            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), 0, halfPoint, halfPoint + 1, (resolution - 1)));
+            pointsToCheck.Enqueue((0, halfPoint, halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)));
+            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)));
+
+            int leftX, rightX, bottomY, topY, frontZ, backZ;
+            while (pointsToCheck.Count > 0)
+            {
+                var range = pointsToCheck.Dequeue();
+                leftX = range.Item1;
+                rightX = range.Item2;
+                bottomY = range.Item3;
+                topY = range.Item4;
+                frontZ = range.Item5;
+                backZ = range.Item6;
+
+                if (leftX == rightX && bottomY == topY && frontZ == backZ) TrivialCase(leftX, bottomY, frontZ);
+                else if (leftX == rightX && bottomY == topY && frontZ != backZ)
+                {
+                    //add 2
+                    TrivialCase(leftX, bottomY, frontZ);
+                    TrivialCase(leftX, bottomY, backZ);
+                }
+                else if (leftX != rightX && bottomY == topY && frontZ == backZ)
+                {
+                    //add 2
+                    TrivialCase(leftX, bottomY, frontZ);
+                    TrivialCase(rightX, bottomY, frontZ);
+                }
+                else if (leftX == rightX && bottomY != topY && frontZ == backZ)
+                {
+                    //add 2
+                    TrivialCase(leftX, bottomY, frontZ);
+                    TrivialCase(leftX, topY, frontZ);
+                }
+                else if (leftX == rightX && bottomY != topY && frontZ != backZ)
+                {
+                    //add 4
+                    TrivialCase(leftX, bottomY, frontZ);
+                    TrivialCase(leftX, bottomY, backZ);
+                    TrivialCase(leftX, topY, frontZ);
+                    TrivialCase(leftX, topY, backZ);
+                }
+                else if (leftX != rightX && bottomY != topY && frontZ == backZ)
+                {
+                    //add 4
+                    TrivialCase(leftX, bottomY, frontZ);
+                    TrivialCase(leftX, topY, frontZ);
+                    TrivialCase(rightX, bottomY, frontZ);
+                    TrivialCase(rightX, topY, frontZ);
+                }
+                else if (leftX != rightX && bottomY == topY && frontZ != backZ)
+                {
+                    //add 4
+                    TrivialCase(leftX, topY, frontZ);
+                    TrivialCase(leftX, topY, backZ);
+                    TrivialCase(rightX, topY, frontZ);
+                    TrivialCase(rightX, topY, backZ);
+                }
+
+                else
+                {
+                    //Step 1: calculate Points
+                    leftBottomFrontID = FindNearestSeed(leftX, bottomY, frontZ);
+                    rightBottomFrontID = FindNearestSeed(rightX, bottomY, frontZ);
+                    leftTopFrontID = FindNearestSeed(leftX, topY, frontZ);
+                    rightTopFrontID = FindNearestSeed(rightX, topY, frontZ);
+
+                    leftBottomBackID = FindNearestSeed(leftX, bottomY, backZ);
+                    rightBottomBackID = FindNearestSeed(rightX, bottomY, backZ);
+                    leftTopBackID = FindNearestSeed(leftX, topY, backZ);
+                    rightTopBackID = FindNearestSeed(rightX, topY, backZ);
+                    //Step 2: Base Case
+                    if (CheckBaseCase(leftBottomFrontID, leftTopFrontID, rightBottomFrontID, rightTopFrontID, leftBottomBackID, leftTopBackID, rightBottomBackID, rightTopBackID))
+                    {
+                        BaseCase(leftBottomFrontID, leftX, rightX, bottomY, topY, frontZ, backZ);
+                    }
+                    //Step 3: Subdivide Case
+                    else
+                    {
+                        int halfPointX = leftX + (rightX - leftX) / 2;
+                        int halfPointY = bottomY + (topY - bottomY) / 2;
+                        int halfPointZ = frontZ + (backZ - frontZ) / 2;
+                        pointsToCheck.Enqueue((leftX, halfPointX, bottomY, halfPointY, frontZ, halfPointZ));
+                        pointsToCheck.Enqueue((halfPointX + 1, rightX, bottomY, halfPointY, frontZ, halfPointZ));
+                        pointsToCheck.Enqueue((leftX, halfPointX, halfPointY + 1, topY, frontZ, halfPointZ));
+                        pointsToCheck.Enqueue((halfPointX + 1, rightX, halfPointY + 1, topY, frontZ, halfPointZ));
+
+                        pointsToCheck.Enqueue((leftX, halfPointX, bottomY, halfPointY, halfPointZ + 1, backZ));
+                        pointsToCheck.Enqueue((halfPointX + 1, rightX, bottomY, halfPointY, halfPointZ + 1, backZ));
+                        pointsToCheck.Enqueue((leftX, halfPointX, halfPointY + 1, topY, halfPointZ + 1, backZ));
+                        pointsToCheck.Enqueue((halfPointX + 1, rightX, halfPointY + 1, topY, halfPointZ + 1, backZ));
+                    }
+                }
+            }
         }
         if (debugType == DEBUGDRAWTYPE.DRAWEDGE)
         {
@@ -252,90 +344,6 @@ public class MemDivideAndConquer3D : DivideAndConquer
         else if (!drawDivideAndConquer)
         {
             CullInnerPoints();
-        }
-    }
-
-    private void DivideAndConquerRecursive(int leftX, int rightX, int bottomY, int topY, int frontZ, int backZ)
-    {
-        //Check for single point
-        if (leftX == rightX && bottomY == topY && frontZ == backZ) TrivialCase(leftX, bottomY, frontZ);
-        else if (leftX == rightX && bottomY == topY && frontZ != backZ)
-        {
-            //add 2
-            TrivialCase(leftX, bottomY, frontZ);
-            TrivialCase(leftX, bottomY, backZ);
-        }
-        else if (leftX != rightX && bottomY == topY && frontZ == backZ)
-        {
-            //add 2
-            TrivialCase(leftX, bottomY, frontZ);
-            TrivialCase(rightX, bottomY, frontZ);
-        }
-        else if (leftX == rightX && bottomY != topY && frontZ == backZ)
-        {
-            //add 2
-            TrivialCase(leftX, bottomY, frontZ);
-            TrivialCase(leftX, topY, frontZ);
-        }
-        else if (leftX == rightX && bottomY != topY && frontZ != backZ)
-        {
-            //add 4
-            TrivialCase(leftX, bottomY, frontZ);
-            TrivialCase(leftX, bottomY, backZ);
-            TrivialCase(leftX, topY, frontZ);
-            TrivialCase(leftX, topY, backZ);
-        }
-        else if (leftX != rightX && bottomY != topY && frontZ == backZ)
-        {
-            //add 4
-            TrivialCase(leftX, bottomY, frontZ);
-            TrivialCase(leftX, topY, frontZ);
-            TrivialCase(rightX, bottomY, frontZ);
-            TrivialCase(rightX, topY, frontZ);
-        }
-        else if(leftX != rightX && bottomY == topY && frontZ != backZ)
-        {
-            //add 4
-            TrivialCase(leftX, topY, frontZ);
-            TrivialCase(leftX, topY, backZ);
-            TrivialCase(rightX, topY, frontZ);
-            TrivialCase(rightX, topY, backZ);
-        }
-        
-        else
-        {
-            //Step 1: calculate Points
-            var leftBottomFrontID = FindNearestSeed(leftX, bottomY, frontZ);
-            var rightBottomFrontID = FindNearestSeed(rightX, bottomY, frontZ);
-            var leftTopFrontID = FindNearestSeed(leftX, topY, frontZ);
-            var rightTopFrontID = FindNearestSeed(rightX, topY, frontZ);
-
-            var leftBottomBackID = FindNearestSeed(leftX, bottomY, backZ);
-            var rightBottomBackID = FindNearestSeed(rightX, bottomY, backZ);
-            var leftTopBackID = FindNearestSeed(leftX, topY, backZ);
-            var rightTopBackID = FindNearestSeed(rightX, topY, backZ);
-            //Step 2: Base Case
-            if (CheckBaseCase(leftBottomFrontID, leftTopFrontID, rightBottomFrontID, rightTopFrontID, leftBottomBackID, leftTopBackID, rightBottomBackID, rightTopBackID))
-            {
-                BaseCase(leftBottomFrontID, leftX, rightX, bottomY, topY, frontZ, backZ);
-            }
-            //Step 3: Subdivide Case
-            else
-            {
-                //Something is not working
-                int halfPointX = leftX + (rightX - leftX) / 2;
-                int halfPointY = bottomY + (topY - bottomY) / 2;
-                int halfPointZ = frontZ + (backZ - frontZ) / 2;
-                DivideAndConquerRecursive(leftX, halfPointX, bottomY, halfPointY, frontZ, halfPointZ); //LeftBottomFront subdivision
-                DivideAndConquerRecursive(halfPointX + 1, rightX, bottomY, halfPointY, frontZ, halfPointZ); //RightBottomFront subdivision
-                DivideAndConquerRecursive(leftX, halfPointX, halfPointY + 1, topY, frontZ, halfPointZ); //LeftTopFront subdivision
-                DivideAndConquerRecursive(halfPointX + 1, rightX, halfPointY + 1, topY, frontZ, halfPointZ); //RightTopFront subdivision
-                
-                DivideAndConquerRecursive(leftX, halfPointX, bottomY, halfPointY, halfPointZ + 1, backZ); //LeftBottomBack subdivision
-                DivideAndConquerRecursive(halfPointX + 1, rightX, bottomY, halfPointY, halfPointZ + 1, backZ); //RightBottomBack subdivision
-                DivideAndConquerRecursive(leftX, halfPointX, halfPointY + 1, topY, halfPointZ + 1, backZ); //LeftTopBack subdivision
-                DivideAndConquerRecursive(halfPointX + 1, rightX, halfPointY + 1, topY, halfPointZ + 1, backZ); //RightTopBack subdivision
-            }
         }
     }
 
@@ -349,7 +357,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
             {
                 for (y = bottomY; y <= topY; y++)
                 {
-                    for(z = frontZ; z <= backZ; z++)
+                    for (z = frontZ; z <= backZ; z++)
                     {
                         addGridPoint.x = x;
                         addGridPoint.y = y;
@@ -361,7 +369,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
             }
         }
 
-        
+
         //Adds only the corners
         if (debugType == DEBUGDRAWTYPE.DRAWCHECKPOINTS)
         {
@@ -399,7 +407,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
             grid[addGridPoint.x][addGridPoint.y][addGridPoint.z] = id;
             cells[id].points.Add(addGridPoint);
         }
-        
+
 
         //Adds only square edge
         if (debugType == DEBUGDRAWTYPE.DRAWSQUARES || debugType == DEBUGDRAWTYPE.DRAWEDGE)
@@ -491,7 +499,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
         int pointX;
         int pointY;
         int pointZ;
-        int tempId=-1;
+        int tempId = -1;
         bool onRim;
 
         int x, y, z;
@@ -519,7 +527,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
                     CheckCullForXZPlanes(pointX, pointY, pointZ)
                     ) onRim = true;
                 else if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = false;
-                
+
                 //Inner points
                 else
                 {
@@ -531,15 +539,15 @@ public class MemDivideAndConquer3D : DivideAndConquer
                             {
                                 if (grid[x][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][y][z])
                                 {
-                                    if (tempId == -1)tempId = grid[x][y][z];
+                                    if (tempId == -1) tempId = grid[x][y][z];
                                     else if (tempId > -1 && grid[x][y][z] != tempId) onRim = true;
-                                    
+
                                 }
                             }
                         }
                     }
                 }
-                
+
                 if (onRim)
                 {
                     addGridPoint.x = pointX;
@@ -557,12 +565,12 @@ public class MemDivideAndConquer3D : DivideAndConquer
             cells[cellIndex].points = newCellPointList;
         }
     }
-    
+
     private bool CheckCullForXYPlanes(int pointX, int pointY, int pointZ)
     {
         int x, y;
-        if(pointZ == 0 || pointZ == resolution - 1)
-        { 
+        if (pointZ == 0 || pointZ == resolution - 1)
+        {
             for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
             {
                 for (y = pointY - 1; y <= pointY + 1; y++) //Get neighbors on y-axis
@@ -573,20 +581,20 @@ public class MemDivideAndConquer3D : DivideAndConquer
                     }
                 }
             }
-            
+
             return false;
         }
         return false;
     }
-    
+
     private bool CheckCullForYZPlanes(int pointX, int pointY, int pointZ)
     {
         int y, z;
         if (pointX == 0 || pointX == resolution - 1)
         {
-            for (y = pointY - 1; y <= pointY + 1; y++) 
+            for (y = pointY - 1; y <= pointY + 1; y++)
             {
-                for (z = pointZ - 1; z <= pointZ + 1; z++) 
+                for (z = pointZ - 1; z <= pointZ + 1; z++)
                 {
                     if (grid[pointX][y][z] > -1 && grid[pointX][pointY][pointZ] != grid[pointX][y][z])
                     {
@@ -604,9 +612,9 @@ public class MemDivideAndConquer3D : DivideAndConquer
         int x, z;
         if (pointY == 0 || pointY == resolution - 1)
         {
-            for (x = pointX - 1; x <= pointX + 1; x++) 
+            for (x = pointX - 1; x <= pointX + 1; x++)
             {
-                for (z = pointZ - 1; z <= pointZ + 1; z++) 
+                for (z = pointZ - 1; z <= pointZ + 1; z++)
                 {
                     if (grid[x][pointY][z] > -1 && grid[pointX][pointY][pointZ] != grid[x][pointY][z])
                     {
@@ -633,9 +641,10 @@ public class MemDivideAndConquer3D : DivideAndConquer
         float distance = (seedPoints[0] - center).magnitude;
 
         var returnID = 0;
+        float newDistance = 0f;
         for (int i = 1; i < seedPoints.Count; i++)
         {
-            float newDistance = (seedPoints[i] - center).magnitude;
+            newDistance = (seedPoints[i] - center).magnitude;
             if (newDistance < distance)
             {
                 distance = newDistance;
@@ -648,16 +657,17 @@ public class MemDivideAndConquer3D : DivideAndConquer
 
     public Vector3 GridPointCenter(int x, int y, int z)
     {
-        /*
+        
         pointVector.x = origin.x + (x * size / resolution) + 0.5f * size / resolution;
         pointVector.y = origin.y + (y * size / resolution) + 0.5f * size / resolution;
         pointVector.z = origin.y + (z * size / resolution) + 0.5f * size / resolution;
         return pointVector;
-        */
+        /*
         return new Vector3(
         origin.x + (x * size / resolution) + 0.5f * size / resolution,
         origin.y + (y * size / resolution) + 0.5f * size / resolution,
         origin.y + (z * size / resolution) + 0.5f * size / resolution);
+        */
     }
 
     #endregion

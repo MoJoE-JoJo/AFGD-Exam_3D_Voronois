@@ -9,7 +9,7 @@ public class RunAlgorithm : MonoBehaviour
 
     [Header("-----Algorithm Phase Implementations-----")]
     public SeedGenerator seedGenerator;
-    public MemDivideAndConquer3D divideAndConquer;
+    public DivideAndConquer divideAndConquer;
     public FloodGraphGenerator floodGraphGenerator;
     public RenderStep renderStep;
 
