@@ -7,7 +7,7 @@ public class MeshGenerator
     public static GameObject GenerateMesh(List<CellPlane> planes, VCell cell, Material polyHedronMaterial, bool useColor, Color polyhedronColor)
     {
         GameObject polyHedron = new GameObject();
-        polyHedron.name = $"Cell: {cellId}";
+        polyHedron.name = $"Cell: {cell.id}";
         Mesh polyHedronMesh = new Mesh();
 
         List<Vector3> vertices = new List<Vector3>();
