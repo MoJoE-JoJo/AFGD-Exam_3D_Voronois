@@ -23,7 +23,7 @@ public class RunAlgorithm : MonoBehaviour
     public float areaSize;
     public int resolutionDivideAndConquer;
     public int resolutionSeed;
-
+    [Range(2, 10)] public int floodCombineRange = 3;
 
     [Header("-----Algorithm Debugging-----")]
     public bool drawArea;
@@ -78,7 +78,7 @@ public class RunAlgorithm : MonoBehaviour
         {
             if (!floodGraphInited)
             {
-                floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer);
+                floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer, floodCombineRange);
                 floodGraphInited = true;
             }
             floodGraphGenerator.DebugDraw();
@@ -123,7 +123,7 @@ public class RunAlgorithm : MonoBehaviour
         divideAndConquer.Run();
 
         //Flooding, combining
-        floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer);
+        floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer, floodCombineRange);
         floodGraphInited = true;
         var vertices = floodGraphGenerator.Run();
 

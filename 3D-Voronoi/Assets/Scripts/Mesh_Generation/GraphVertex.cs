@@ -59,7 +59,7 @@ public class GraphVertex
 
     public override string ToString()
     {
-        return $"({Point.x}, {Point.y}, {Point.z})";
+        return $"({Point.x}, {Point.y}, {Point.z}) CellCount: {cellIds.Count}";
     }
 
     public override bool Equals(object obj)
