@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DivideAndConquer : MonoBehaviour
+abstract public class DivideAndConquer : MonoBehaviour
 {
     [Header("Debugging")]
     protected DEBUGDRAWTYPE debugType;
@@ -22,7 +22,7 @@ public class DivideAndConquer : MonoBehaviour
     protected Vector3 size;
 
     #region run
-    public void Init(List<Vector3> seeds, Vector3Int resolution, Vector3 origin, Vector3 size, DEBUGDRAWTYPE debugType)
+    virtual public void Init(List<Vector3> seeds, Vector3Int resolution, Vector3 origin, Vector3 size, DEBUGDRAWTYPE debugType)
     {
         this.resolution = resolution;
         this.origin = origin;
@@ -39,20 +39,6 @@ public class DivideAndConquer : MonoBehaviour
 
     #endregion
     #region debug
-
-    /*
-    public void DrawSeeds()
-    {
-        float size = 0.10f;
-        for (int i = 0; i < cells.Count; i++)
-        {
-            Debug.DrawLine(cells[i].seed - new Vector3(size, 0, 0), cells[i].seed + new Vector3(size, 0, 0), cells[i].color);
-            Debug.DrawLine(cells[i].seed - new Vector3(0, size, 0), cells[i].seed + new Vector3(0, size, 0), cells[i].color);
-            Debug.DrawLine(cells[i].seed - new Vector3(0, 0, size), cells[i].seed + new Vector3(0, 0, size), cells[i].color);
-        }
-    }
-    */
-
     public void DrawPointGrid()
     {
         int x, y, z;
@@ -86,10 +72,7 @@ public class DivideAndConquer : MonoBehaviour
     #endregion
 
     #region algorithm
-    protected virtual void DividAndConquer()
-    {
-
-    }
+    abstract protected void DividAndConquer();
 
     private void SetSeeds(List<Vector3> seeds)
     {
@@ -422,7 +405,7 @@ public class DivideAndConquer : MonoBehaviour
         else return false;
     }
 
-    protected int FindNearestSeed(int x, int y, int z)
+    virtual protected int FindNearestSeed(int x, int y, int z)
     {
         var center = GridPointCenter(x, y, z);
 
