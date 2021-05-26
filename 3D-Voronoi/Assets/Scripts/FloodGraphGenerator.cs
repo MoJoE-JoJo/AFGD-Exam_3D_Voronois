@@ -12,6 +12,7 @@ public class FloodGraphGenerator : MonoBehaviour
     public PlaneGenerator planeGenerator;
     public Material mat;
     public bool debugDraw = true;
+    public bool debugDrawNeighboors = false;
     [Header("Bool run button")]
     public bool run = false;
 
@@ -61,7 +62,7 @@ public class FloodGraphGenerator : MonoBehaviour
                     p.DebugDrawCenter();
                 }
 
-                MeshGenerator.GenerateMesh(planes, item.id, mat);
+                //MeshGenerator.GenerateMesh(planes, item.id, mat);
             }
 
             //planeGenerator.GeneratePlanesForCell(0, cellid0.ToList());
@@ -103,22 +104,44 @@ public class FloodGraphGenerator : MonoBehaviour
     private void DebugDraw()
     {
         int count = 0;
+
+        if (debugDrawNeighboors)
+        {
+            foreach (GraphVertex item in vertices)
+            {
+                var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
+                ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                ball.gameObject.name = count++ + ": " + item.ToString();
+
+                foreach (GraphVertex vertex in item.connectedVertices)
+                {
+                    var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
+                    v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                    v.gameObject.name = vertex.ToString();
+                    v.transform.parent = ball.transform;
+
+                }
+            }
+        }
+
         foreach (GraphVertex item in vertices)
         {
+            //Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
+            
             var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
             ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
             ball.gameObject.name = count++ + ": " + item.ToString();
+            
 
             foreach (GraphVertex vertex in item.connectedVertices)
             {
-                var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
-                v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                v.gameObject.name = vertex.ToString();
-                v.transform.parent = ball.transform;
+                Debug.DrawLine(item.Position, vertex.Position, Color.white, 5000);
             }
         }
+
     }
 
     private void VertexFlood(int cellID)

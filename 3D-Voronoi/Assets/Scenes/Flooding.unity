@@ -537,6 +537,7 @@ MonoBehaviour:
   planeGenerator: {fileID: 1869863653}
   mat: {fileID: 2100000, guid: a2519a44468a5d743a3fd9f5b85b7d83, type: 2}
   debugDraw: 1
+  debugDrawNeighboors: 0
   run: 0
 --- !u!4 &208308000
 Transform:
@@ -2348,10 +2349,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   drawArea: 1
-  drawSeeds: 1
-  drawDivideAndConquer: 1
+  drawSeeds: 0
+  drawDivideAndConquer: 0
   debugType: 1
-  rerun: 1
+  rerun: 0
   seedPoints:
   - {x: 4.88, y: 2.82, z: 7.94}
   - {x: 3.6, y: 8.16, z: 6.83}
