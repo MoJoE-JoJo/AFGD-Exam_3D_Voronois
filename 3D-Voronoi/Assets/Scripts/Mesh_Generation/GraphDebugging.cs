@@ -22,7 +22,7 @@ public class GraphDebugging : MonoBehaviour
         {
             foreach(GraphVertex gv in vertices)
             {
-                gv.DebugDraw();
+                //gv.DebugDraw();
             }
         }
     }

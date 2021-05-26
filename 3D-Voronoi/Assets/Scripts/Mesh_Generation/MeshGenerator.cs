@@ -48,6 +48,8 @@ public class MeshGenerator
 
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
 
+        Debug.Log(tris.Count);
+
     }
 
     private static void GenerateSingleFace(CellPlane plane, ref List<Vector3> vertices, ref List<int> tris)
@@ -55,7 +57,7 @@ public class MeshGenerator
         Vector3[] vertexArray = new Vector3[plane.vertices.Count + 1];
         for(int i = 0; i <plane.vertices.Count; i++)
         {
-            vertexArray[i] = plane.vertices[i].position;
+            vertexArray[i] = plane.vertices[i].Position;
         }
         vertexArray[vertexArray.Length - 1] = plane.CenterPoint();
 

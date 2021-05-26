@@ -20,8 +20,7 @@ public class MemDivideAndConquer3D : DivideAndConquer
     private GridPoint addGridPoint = new GridPoint();
     private Vector3 pointVector = new Vector3();
     //private Vector3 gridPointCenterVector = new Vector3();
-    //[Range(0f, 1f)]
-    private List<Vector3> seedPoints;
+    public List<Vector3> seedPoints;
     public int resolution;
     private Vector3 origin;
 

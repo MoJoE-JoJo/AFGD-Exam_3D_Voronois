@@ -11,7 +11,10 @@ public struct GridPoint
     public int y;
     public int z;
 
-
+    public override string ToString()
+    {
+        return $"({x}, {y}, {z})";
+    }
     public static bool operator ==(GridPoint lhs, GridPoint rhs)
     {
         return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);

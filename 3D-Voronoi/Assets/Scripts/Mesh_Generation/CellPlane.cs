@@ -21,7 +21,7 @@ public class CellPlane : MonoBehaviour
         Vector3 center = new Vector3();
         foreach(GraphVertex gv in vertices)
         {
-            center += gv.position;
+            center += gv.Position;
         }
         center /= vertices.Count;
         return center;
