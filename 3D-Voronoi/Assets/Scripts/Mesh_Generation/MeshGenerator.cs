@@ -7,6 +7,7 @@ public class MeshGenerator
     public static void GenerateMesh(List<CellPlane> planes, int cellId, Material polyHedronMaterial)
     {
         GameObject polyHedron = new GameObject();
+        polyHedron.name = $"Cell: {cellId}";
         Mesh polyHedronMesh = new Mesh();
         var cell = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>().cells[cellId];
 
@@ -34,21 +35,24 @@ public class MeshGenerator
         {
             normals[i] = -Vector3.forward;
             uv[i] = new Vector2(0, 0);
-            colors[i] = cell.color;
+            //colors[i] = cell.color;
+            colors[i] = Color.grey;
         }
         polyHedronMesh.normals = normals;
         polyHedronMesh.uv = uv;
         polyHedronMesh.colors = colors;
 
-
         var meshFilter = polyHedron.AddComponent<MeshFilter>();
         var meshRenderer = polyHedron.AddComponent<MeshRenderer>();
         meshFilter.mesh = polyHedronMesh;
         meshRenderer.material = polyHedronMaterial;
-
+        polyHedron.AddComponent<MeshCollider>();
+        polyHedron.tag = "Sculpture";
+        HighLightMesh highlight = polyHedron.AddComponent<HighLightMesh>();
+        highlight.Init(cell.color, meshRenderer);
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
 
-        Debug.Log(tris.Count);
+        //Debug.Log(tris.Count);
 
     }
 
