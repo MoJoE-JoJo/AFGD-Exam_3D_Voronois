@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - DivideAndConquer
+  - Ground
+  - Sculpture
   layers:
   - Default
   - TransparentFX

@@ -7,6 +7,7 @@ public class MeshGenerator
     public static GameObject GenerateMesh(List<CellPlane> planes, VCell cell, Material polyHedronMaterial, bool useColor, Color polyhedronColor)
     {
         GameObject polyHedron = new GameObject();
+        polyHedron.name = $"Cell: {cellId}";
         Mesh polyHedronMesh = new Mesh();
 
         List<Vector3> vertices = new List<Vector3>();
@@ -35,22 +36,23 @@ public class MeshGenerator
             uv[i] = new Vector2(0, 0);
             if (!useColor) colors[i] = cell.color;
             else if (useColor) colors[i] = polyhedronColor;
+
         }
         polyHedronMesh.normals = normals;
         polyHedronMesh.uv = uv;
         polyHedronMesh.colors = colors;
 
-
         var meshFilter = polyHedron.AddComponent<MeshFilter>();
         var meshRenderer = polyHedron.AddComponent<MeshRenderer>();
         meshFilter.mesh = polyHedronMesh;
         meshRenderer.material = polyHedronMaterial;
-
+        polyHedron.AddComponent<MeshCollider>();
+        polyHedron.tag = "Sculpture";
+        HighLightMesh highlight = polyHedron.AddComponent<HighLightMesh>();
+        highlight.Init(cell.color, meshRenderer);
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
-
         Debug.Log(tris.Count);
         return polyHedron;
-
     }
 
     private static void GenerateSingleFace(CellPlane plane, ref List<Vector3> vertices, ref List<int> tris)
