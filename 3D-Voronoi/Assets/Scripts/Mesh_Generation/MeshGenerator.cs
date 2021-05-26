@@ -7,7 +7,7 @@ public class MeshGenerator
     public static void GenerateMesh(List<CellPlane> planes, int cellId, Material polyHedronMaterial)
     {
         GameObject polyHedron = new GameObject();
-        polyHedron.name = $"Cell: {cellId}";
+        polyHedron.name = $"Cell: {cell.id}";
         Mesh polyHedronMesh = new Mesh();
         var cell = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>().cells[cellId];
 

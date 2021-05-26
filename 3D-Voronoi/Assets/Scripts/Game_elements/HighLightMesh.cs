@@ -11,7 +11,7 @@ public class HighLightMesh : MonoBehaviour
     private MeshRenderer meshrend;
     private Color baseColor;
 
-    // Update is called once per frame
+    // Update is called once per frame sadas 
     void Update()
     {
         if (isHighlighted)
