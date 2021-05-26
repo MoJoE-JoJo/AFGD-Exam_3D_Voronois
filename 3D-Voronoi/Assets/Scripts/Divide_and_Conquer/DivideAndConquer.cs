@@ -16,13 +16,13 @@ public class DivideAndConquer : MonoBehaviour
 
     public List<VCell> cells;
     public List<Vector3> seedPoints;
-    protected int resolution;
+    protected Vector3Int resolution;
     protected Vector3 origin;
 
-    protected float size;
+    protected Vector3 size;
 
     #region run
-    public void Init(List<Vector3> seeds, int resolution, Vector3 origin, float size, DEBUGDRAWTYPE debugType)
+    public void Init(List<Vector3> seeds, Vector3Int resolution, Vector3 origin, Vector3 size, DEBUGDRAWTYPE debugType)
     {
         this.resolution = resolution;
         this.origin = origin;
@@ -77,9 +77,9 @@ public class DivideAndConquer : MonoBehaviour
         debugPoint.center = GridPointCenter(x, y, z);
 
 
-        debugPoint.x = size / resolution;
-        debugPoint.y = size / resolution;
-        debugPoint.z = size / resolution;
+        debugPoint.x = size.x / resolution.x;
+        debugPoint.y = size.y / resolution.y;
+        debugPoint.z = size.z / resolution.z;
         debugPoint.DebugDraw(cells[id].color);
     }
 
@@ -113,13 +113,13 @@ public class DivideAndConquer : MonoBehaviour
     {
         int x, y, z;
         int j;
-        grid = new int[resolution][][];
+        grid = new int[resolution.x][][];
         for (int i = 0; i < grid.Length; i++)
         {
-            grid[i] = new int[resolution][];
+            grid[i] = new int[resolution.y][];
             for (j = 0; j < grid[i].Length; j++)
             {
-                grid[i][j] = new int[resolution];
+                grid[i][j] = new int[resolution.z];
             }
         }
         for (x = 0; x < grid.Length; x++)
@@ -305,16 +305,16 @@ public class DivideAndConquer : MonoBehaviour
 
                 //Edge of the cube points
                 if (
-                    ((pointY == 0 || pointY == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
-                    ((pointX == 0 || pointX == resolution - 1) && (pointZ == 0 || pointZ == resolution - 1)) ||
-                    ((pointX == 0 || pointX == resolution - 1) && (pointY == 0 || pointY == resolution - 1))
+                    ((pointY == 0 || pointY == resolution.y - 1) && (pointZ == 0 || pointZ == resolution.z - 1)) ||
+                    ((pointX == 0 || pointX == resolution.x - 1) && (pointZ == 0 || pointZ == resolution.z - 1)) ||
+                    ((pointX == 0 || pointX == resolution.x - 1) && (pointY == 0 || pointY == resolution.y - 1))
                     ) onRim = true;
                 else if (
                     CheckCullForXYPlanes(pointX, pointY, pointZ) ||
                     CheckCullForYZPlanes(pointX, pointY, pointZ) ||
                     CheckCullForXZPlanes(pointX, pointY, pointZ)
                     ) onRim = true;
-                else if (pointX == 0 || pointX == resolution - 1 || pointY == 0 || pointY == resolution - 1 || pointZ == 0 || pointZ == resolution - 1) onRim = false;
+                else if (pointX == 0 || pointX == resolution.x - 1 || pointY == 0 || pointY == resolution.y - 1 || pointZ == 0 || pointZ == resolution.z - 1) onRim = false;
 
                 //Inner points
                 else
@@ -357,7 +357,7 @@ public class DivideAndConquer : MonoBehaviour
     protected bool CheckCullForXYPlanes(int pointX, int pointY, int pointZ)
     {
         int x, y;
-        if (pointZ == 0 || pointZ == resolution - 1)
+        if (pointZ == 0 || pointZ == resolution.z - 1)
         {
             for (x = pointX - 1; x <= pointX + 1; x++) //Get neighbors on x-axis
             {
@@ -378,7 +378,7 @@ public class DivideAndConquer : MonoBehaviour
     protected bool CheckCullForYZPlanes(int pointX, int pointY, int pointZ)
     {
         int y, z;
-        if (pointX == 0 || pointX == resolution - 1)
+        if (pointX == 0 || pointX == resolution.x - 1)
         {
             for (y = pointY - 1; y <= pointY + 1; y++)
             {
@@ -398,7 +398,7 @@ public class DivideAndConquer : MonoBehaviour
     protected bool CheckCullForXZPlanes(int pointX, int pointY, int pointZ)
     {
         int x, z;
-        if (pointY == 0 || pointY == resolution - 1)
+        if (pointY == 0 || pointY == resolution.y - 1)
         {
             for (x = pointX - 1; x <= pointX + 1; x++)
             {
@@ -444,9 +444,9 @@ public class DivideAndConquer : MonoBehaviour
 
     public Vector3 GridPointCenter(int x, int y, int z)
     {
-        pointVector.x = origin.x + (x * size / resolution) + 0.5f * size / resolution;
-        pointVector.y = origin.y + (y * size / resolution) + 0.5f * size / resolution;
-        pointVector.z = origin.y + (z * size / resolution) + 0.5f * size / resolution;
+        pointVector.x = origin.x + (x * size.x / resolution.x) + 0.5f * size.x / resolution.x;
+        pointVector.y = origin.y + (y * size.y / resolution.y) + 0.5f * size.y / resolution.y;
+        pointVector.z = origin.y + (z * size.z / resolution.z) + 0.5f * size.z / resolution.z;
         return pointVector;
     }
 #endregion

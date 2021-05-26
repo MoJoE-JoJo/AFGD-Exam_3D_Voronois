@@ -5,34 +5,37 @@ using UnityEngine;
 public class RunAlgorithm : MonoBehaviour
 {
     [Header("-----Run Algorithm-----")]
-    public bool run;
+    [SerializeField] private bool run;
 
     [Header("-----Algorithm Phase Implementations-----")]
-    public VoronoiArea area;
-    public SeedGenerator seedGenerator;
-    public DivideAndConquer divideAndConquer;
-    public FloodGraphGenerator floodGraphGenerator;
-    public RenderStep renderStep;
+    [SerializeField] private VoronoiArea area;
+    [SerializeField] private SeedGenerator seedGenerator;
+    [SerializeField] private DivideAndConquer divideAndConquer;
+    [SerializeField] private FloodGraphGenerator floodGraphGenerator;
+    [SerializeField] private RenderStep renderStep;
 
     [Header("-----Algorithm Parameters-----")]
     [Tooltip("Random if 0, else it is deterministic")]public int randomSeed;
-    public GameObject polyhedronParent;
-    public Material polyhedronMaterial;
-    public bool useColor = true;
-    public Color polyhedronColor;
-    public float areaSize;
-    public int resolutionDivideAndConquer;
-    public int resolutionSeed;
+    [SerializeField] private GameObject polyhedronParent;
+    [SerializeField] private Material polyhedronMaterial;
+    [SerializeField] private bool useColor = true;
+    [SerializeField] private Color polyhedronColor;
+
+    [SerializeField] private Vector3 areaSize;
+    [SerializeField] [Tooltip("Values that are too different can result in faulty results")] private Vector3Int resolutionDivideAndConquer;
+    [SerializeField] private Vector3Int resolutionSeed;
+
+
 
 
     [Header("-----Algorithm Debugging-----")]
-    public bool drawArea;
-    public bool drawSeeds;
-    public DEBUGDRAWTYPE dacDrawType;
-    public bool drawDivideAndConquer;
-    public bool drawFloodedGraph;
-    public bool drawFaceCentroids;
-    public bool hidePolyhedrons;
+    [SerializeField] private bool drawArea;
+    [SerializeField] private bool drawSeeds;
+    [SerializeField] private DEBUGDRAWTYPE dacDrawType;
+    [SerializeField] private bool drawDivideAndConquer;
+    [SerializeField] private bool drawFloodedGraph;
+    [SerializeField] private bool drawFaceCentroids;
+    [SerializeField] private bool hidePolyhedrons;
 
     private bool areaInited = false;
     private bool seedsInited = false;

@@ -9,33 +9,35 @@ public class IterativeDivideAndConquer : DivideAndConquer
     {
         //Step 1: calculate Points
         var leftBottomFrontID = FindNearestSeed(0, 0, 0);
-        var rightBottomFrontID = FindNearestSeed(resolution - 1, 0, 0);
-        var leftTopFrontID = FindNearestSeed(0, resolution - 1, 0);
-        var rightTopFrontID = FindNearestSeed(resolution - 1, resolution - 1, 0);
+        var rightBottomFrontID = FindNearestSeed(resolution.x - 1, 0, 0);
+        var leftTopFrontID = FindNearestSeed(0, resolution.y - 1, 0);
+        var rightTopFrontID = FindNearestSeed(resolution.x - 1, resolution.y - 1, 0);
 
-        var leftBottomBackID = FindNearestSeed(0, 0, resolution - 1);
-        var rightBottomBackID = FindNearestSeed(resolution - 1, 0, resolution - 1);
-        var leftTopBackID = FindNearestSeed(0, resolution - 1, resolution - 1);
-        var rightTopBackID = FindNearestSeed(resolution - 1, resolution - 1, resolution - 1);
+        var leftBottomBackID = FindNearestSeed(0, 0, resolution.z - 1);
+        var rightBottomBackID = FindNearestSeed(resolution.x - 1, 0, resolution.z - 1);
+        var leftTopBackID = FindNearestSeed(0, resolution.y - 1, resolution.z - 1);
+        var rightTopBackID = FindNearestSeed(resolution.x - 1, resolution.y - 1, resolution.z - 1);
 
         //Step 2: Base Case
         if (CheckBaseCase(leftBottomFrontID, leftTopFrontID, rightBottomFrontID, rightTopFrontID, leftBottomBackID, leftTopBackID, rightBottomBackID, rightTopBackID))
         {
-            BaseCase(leftBottomFrontID, 0, resolution - 1, 0, resolution - 1, 0, resolution - 1);
+            BaseCase(leftBottomFrontID, 0, resolution.x - 1, 0, resolution.y - 1, 0, resolution.z - 1);
         }
         //Step 3: Subdivide Case
         else
         {
-            int halfPoint = (resolution - 1) / 2;
-            pointsToCheck.Enqueue((0, halfPoint, 0, halfPoint, 0, halfPoint));
-            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), 0, halfPoint, 0, halfPoint));
-            pointsToCheck.Enqueue((0, halfPoint, halfPoint + 1, (resolution - 1), 0, halfPoint));
-            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), 0, halfPoint));
+            int halfPointX = (resolution.x - 1) / 2;
+            int halfPointY = (resolution.y - 1) / 2;
+            int halfPointZ = (resolution.z - 1) / 2;
+            pointsToCheck.Enqueue((0, halfPointX, 0, halfPointY, 0, halfPointZ));
+            pointsToCheck.Enqueue((halfPointX + 1, (resolution.x - 1), 0, halfPointY, 0, halfPointZ));
+            pointsToCheck.Enqueue((0, halfPointX, halfPointY + 1, (resolution.y - 1), 0, halfPointZ));
+            pointsToCheck.Enqueue((halfPointX + 1, (resolution.x - 1), halfPointY + 1, (resolution.y - 1), 0, halfPointZ));
 
-            pointsToCheck.Enqueue((0, halfPoint, 0, halfPoint, halfPoint + 1, (resolution - 1)));
-            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), 0, halfPoint, halfPoint + 1, (resolution - 1)));
-            pointsToCheck.Enqueue((0, halfPoint, halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)));
-            pointsToCheck.Enqueue((halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)));
+            pointsToCheck.Enqueue((0, halfPointX, 0, halfPointY, halfPointZ + 1, (resolution.z - 1)));
+            pointsToCheck.Enqueue((halfPointX + 1, (resolution.x - 1), 0, halfPointY, halfPointZ + 1, (resolution.z - 1)));
+            pointsToCheck.Enqueue((0, halfPointX, halfPointY + 1, (resolution.y - 1), halfPointZ + 1, (resolution.z - 1)));
+            pointsToCheck.Enqueue((halfPointX + 1, (resolution.x - 1), halfPointY + 1, (resolution.y - 1), halfPointZ + 1, (resolution.z - 1)));
 
             int leftX, rightX, bottomY, topY, frontZ, backZ;
             while (pointsToCheck.Count > 0)
@@ -112,9 +114,9 @@ public class IterativeDivideAndConquer : DivideAndConquer
                     //Step 3: Subdivide Case
                     else
                     {
-                        int halfPointX = leftX + (rightX - leftX) / 2;
-                        int halfPointY = bottomY + (topY - bottomY) / 2;
-                        int halfPointZ = frontZ + (backZ - frontZ) / 2;
+                        halfPointX = leftX + (rightX - leftX) / 2;
+                        halfPointY = bottomY + (topY - bottomY) / 2;
+                        halfPointZ = frontZ + (backZ - frontZ) / 2;
                         pointsToCheck.Enqueue((leftX, halfPointX, bottomY, halfPointY, frontZ, halfPointZ));
                         pointsToCheck.Enqueue((halfPointX + 1, rightX, bottomY, halfPointY, frontZ, halfPointZ));
                         pointsToCheck.Enqueue((leftX, halfPointX, halfPointY + 1, topY, frontZ, halfPointZ));

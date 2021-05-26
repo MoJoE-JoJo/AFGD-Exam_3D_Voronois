@@ -9,7 +9,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private DivideAndConquer DAC; //Remember to set
     private int combineRange = 2;
-    private int resolution;
+    private Vector3Int resolution;
 
     private GridPoint _gridPoint;
     private HashSet<GraphVertex> vertices;
@@ -31,7 +31,7 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    public void Init(DivideAndConquer divideAndConquer, int resolution)
+    public void Init(DivideAndConquer divideAndConquer, Vector3Int resolution)
     {
         DAC = divideAndConquer;
         this.resolution = resolution;
@@ -381,29 +381,38 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private bool IsCornerPoint(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         // if all index are either 0 or max value, then the point must be a corner point
-        return (p.x == 0 || p.x == maxIndex) && (p.y == 0 || p.y == maxIndex) && (p.z == 0 || p.z == maxIndex);
+        return (p.x == 0 || p.x == maxIndexX) && (p.y == 0 || p.y == maxIndexY) && (p.z == 0 || p.z == maxIndexZ);
     }
 
     private bool IsOnSideLine(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         //two coords need to be either 0 or max for the point to allign with a corner 
         int count = 0;
 
-        if (p.x == 0 || p.x == maxIndex) count++;
-        if (p.y == 0 || p.y == maxIndex) count++;
-        if (p.z == 0 || p.z == maxIndex) count++;
+        if (p.x == 0 || p.x == maxIndexX) count++;
+        if (p.y == 0 || p.y == maxIndexY) count++;
+        if (p.z == 0 || p.z == maxIndexZ) count++;
 
         return count == 2;
     }
 
     private bool IsOnSidePlane(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         //If a single of the coords are either 0 or max value, then the point must be on a side
-        return p.x == 0 || p.x == maxIndex || p.y == 0 || p.y == maxIndex || p.z == 0 || p.z == maxIndex;
+        return p.x == 0 || p.x == maxIndexX || p.y == 0 || p.y == maxIndexY || p.z == 0 || p.z == maxIndexZ;
 
     }
 }

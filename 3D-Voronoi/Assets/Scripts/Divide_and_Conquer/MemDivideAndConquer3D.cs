@@ -8,33 +8,36 @@ public class MemDivideAndConquer3D : DivideAndConquer
     {
         //Step 1: calculate Points
         var leftBottomFrontID = FindNearestSeed(0, 0, 0);
-        var rightBottomFrontID = FindNearestSeed(resolution - 1, 0, 0);
-        var leftTopFrontID = FindNearestSeed(0, resolution - 1, 0);
-        var rightTopFrontID = FindNearestSeed(resolution - 1, resolution - 1, 0);
+        var rightBottomFrontID = FindNearestSeed(resolution.x - 1, 0, 0);
+        var leftTopFrontID = FindNearestSeed(0, resolution.y - 1, 0);
+        var rightTopFrontID = FindNearestSeed(resolution.x - 1, resolution.y - 1, 0);
 
-        var leftBottomBackID = FindNearestSeed(0, 0, resolution - 1);
-        var rightBottomBackID = FindNearestSeed(resolution - 1, 0, resolution - 1);
-        var leftTopBackID = FindNearestSeed(0, resolution - 1, resolution - 1);
-        var rightTopBackID = FindNearestSeed(resolution - 1, resolution - 1, resolution - 1);
+        var leftBottomBackID = FindNearestSeed(0, 0, resolution.z - 1);
+        var rightBottomBackID = FindNearestSeed(resolution.x - 1, 0, resolution.z - 1);
+        var leftTopBackID = FindNearestSeed(0, resolution.y - 1, resolution.z - 1);
+        var rightTopBackID = FindNearestSeed(resolution.x - 1, resolution.y - 1, resolution.z - 1);
 
         //Step 2: Base Case
         if (CheckBaseCase(leftBottomFrontID, leftTopFrontID, rightBottomFrontID, rightTopFrontID, leftBottomBackID, leftTopBackID, rightBottomBackID, rightTopBackID))
         {
-            BaseCase(leftBottomFrontID, 0, resolution - 1, 0, resolution - 1, 0, resolution - 1);
+            BaseCase(leftBottomFrontID, 0, resolution.x - 1, 0, resolution.y - 1, 0, resolution.z - 1);
+
         }
         //Step 3: Subdivide Case
         else
         {
-            int halfPoint = (resolution - 1) / 2;
-            DivideAndConquerRecursive(0, halfPoint, 0, halfPoint, 0, halfPoint); //LeftBottomFront subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), 0, halfPoint, 0, halfPoint); //RightBottomFront subdivision
-            DivideAndConquerRecursive(0, halfPoint, halfPoint + 1, (resolution - 1), 0, halfPoint); //LeftTopFront subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), 0, halfPoint); //RightTopFront subdivision
+            int halfPointX = (resolution.x - 1) / 2;
+            int halfPointY = (resolution.y - 1) / 2;
+            int halfPointZ = (resolution.z - 1) / 2;
+            DivideAndConquerRecursive(0, halfPointX, 0, halfPointY, 0, halfPointZ);//LeftBottomFront subdivision
+            DivideAndConquerRecursive(halfPointX + 1, (resolution.x - 1), 0, halfPointY, 0, halfPointZ);//RightBottomFront subdivision
+            DivideAndConquerRecursive(0, halfPointX, halfPointY + 1, (resolution.y - 1), 0, halfPointZ);//LeftTopFront subdivision
+            DivideAndConquerRecursive(halfPointX + 1, (resolution.x - 1), halfPointY + 1, (resolution.y - 1), 0, halfPointZ); //RightTopFront subdivision
 
-            DivideAndConquerRecursive(0, halfPoint, 0, halfPoint, halfPoint + 1, (resolution - 1)); //LeftBottomBack subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), 0, halfPoint, halfPoint + 1, (resolution - 1)); //RightBottomBack subdivision
-            DivideAndConquerRecursive(0, halfPoint, halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //LeftTopBack subdivision
-            DivideAndConquerRecursive(halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1), halfPoint + 1, (resolution - 1)); //RightTopBack subdivision
+            DivideAndConquerRecursive(0, halfPointX, 0, halfPointY, halfPointZ + 1, (resolution.z - 1)); //LeftBottomBack subdivision
+            DivideAndConquerRecursive(halfPointX + 1, (resolution.x - 1), 0, halfPointY, halfPointZ + 1, (resolution.z - 1)); //RightBottomBack subdivision
+            DivideAndConquerRecursive(0, halfPointX, halfPointY + 1, (resolution.y - 1), halfPointZ + 1, (resolution.z - 1)); //LeftTopBack subdivision
+            DivideAndConquerRecursive(halfPointX + 1, (resolution.x - 1), halfPointY + 1, (resolution.y - 1), halfPointZ + 1, (resolution.z - 1)); //RightTopBack subdivision
         }
         if (debugType == DEBUGDRAWTYPE.DRAWEDGE || debugType == DEBUGDRAWTYPE.RUN)
         {
