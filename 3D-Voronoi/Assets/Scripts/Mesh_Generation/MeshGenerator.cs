@@ -46,10 +46,13 @@ public class MeshGenerator
         var meshRenderer = polyHedron.AddComponent<MeshRenderer>();
         meshFilter.mesh = polyHedronMesh;
         meshRenderer.material = polyHedronMaterial;
+        
+        //Meshcollider and highlight
         polyHedron.AddComponent<MeshCollider>();
         polyHedron.tag = "Sculpture";
         HighLightMesh highlight = polyHedron.AddComponent<HighLightMesh>();
         highlight.Init(cell.color, meshRenderer);
+        
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
         Debug.Log(tris.Count);
         return polyHedron;

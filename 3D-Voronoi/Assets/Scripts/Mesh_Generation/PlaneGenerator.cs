@@ -5,37 +5,7 @@ using UnityEngine;
 
 public class PlaneGenerator : MonoBehaviour
 {
-    //public bool debugGenerate = false;
-    //public bool debugDrawCenters = false;
-    //public bool debugMeshGenerate = false;
-    //public Material polyHedronMaterial;
-    //public List<GraphVertex> cellVertices;
-    //public int cellId;
-    //private List<CellPlane> planes;
 
-    /*
-    public void Update()
-    {
-        if (debugGenerate)
-        {
-            planes = GeneratePlanesForCell(cellId, cellVertices);
-            Debug.Log(planes.Count);
-            debugGenerate = false;
-        }
-        if (debugDrawCenters)
-        {
-            foreach(CellPlane cp in planes)
-            {
-                cp.DebugDrawCenter();
-            }
-        }
-        if (debugMeshGenerate)
-        {
-            debugMeshGenerate = false;
-            MeshGenerator.GenerateMesh(planes, cellId, polyHedronMaterial);
-        }
-    }
-    */
 
     public static List<CellPlane> GeneratePlanesForCell(int cellId, List<GraphVertex> vertices)
     {
