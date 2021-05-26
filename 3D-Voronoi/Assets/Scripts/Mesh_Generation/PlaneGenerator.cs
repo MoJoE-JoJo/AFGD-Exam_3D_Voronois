@@ -5,14 +5,15 @@ using UnityEngine;
 
 public class PlaneGenerator : MonoBehaviour
 {
-    public bool debugGenerate = false;
-    public bool debugDrawCenters = false;
-    public bool debugMeshGenerate = false;
-    public Material polyHedronMaterial;
-    public List<GraphVertex> cellVertices;
-    public int cellId;
-    private List<CellPlane> planes;
+    //public bool debugGenerate = false;
+    //public bool debugDrawCenters = false;
+    //public bool debugMeshGenerate = false;
+    //public Material polyHedronMaterial;
+    //public List<GraphVertex> cellVertices;
+    //public int cellId;
+    //private List<CellPlane> planes;
 
+    /*
     public void Update()
     {
         if (debugGenerate)
@@ -34,8 +35,9 @@ public class PlaneGenerator : MonoBehaviour
             MeshGenerator.GenerateMesh(planes, cellId, polyHedronMaterial);
         }
     }
+    */
 
-    public List<CellPlane> GeneratePlanesForCell(int cellId, List<GraphVertex> vertices)
+    public static List<CellPlane> GeneratePlanesForCell(int cellId, List<GraphVertex> vertices)
     {
         //For each vertex run breadth first search, check for cycles, stop when a number of cycles equal to number of neighboors of the vertex
         var planes = new List<CellPlane>();
@@ -69,7 +71,7 @@ public class PlaneGenerator : MonoBehaviour
         return planes;
     }
 
-    private List<CellPlane> BreadthFirstSearch(int cellId, List<GraphVertex> graph, GraphVertex root)
+    private static List<CellPlane> BreadthFirstSearch(int cellId, List<GraphVertex> graph, GraphVertex root)
     {
         var targetNumberOfPlanes = FindNumberOfNeighborsInCell(cellId, root.connectedVertices);
         var planes = new List<CellPlane>();
@@ -163,7 +165,7 @@ public class PlaneGenerator : MonoBehaviour
 
     }
 
-    private int FindNumberOfNeighborsInCell(int cellId, List<GraphVertex> neighbors)
+    private static int FindNumberOfNeighborsInCell(int cellId, List<GraphVertex> neighbors)
     {
         var number = 0;
         for(int i = 0; i<neighbors.Count; i++)

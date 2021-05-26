@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class MeshGenerator
 {
-    public static void GenerateMesh(List<CellPlane> planes, int cellId, Material polyHedronMaterial)
+    public static GameObject GenerateMesh(List<CellPlane> planes, VCell cell, Material polyHedronMaterial)
     {
         GameObject polyHedron = new GameObject();
         Mesh polyHedronMesh = new Mesh();
-        var cell = GameObject.FindGameObjectWithTag("DivideAndConquer").GetComponent<MemDivideAndConquer3D>().cells[cellId];
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> tris = new List<int>();
@@ -49,6 +48,7 @@ public class MeshGenerator
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
 
         Debug.Log(tris.Count);
+        return polyHedron;
 
     }
 

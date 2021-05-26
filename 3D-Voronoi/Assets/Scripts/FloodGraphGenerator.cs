@@ -7,26 +7,14 @@ using UnityEngine;
 public class FloodGraphGenerator : MonoBehaviour
 {
 
-    [SerializeField] private MemDivideAndConquer3D DAC;
-    [SerializeField] private int combineRange = 2;
-    public PlaneGenerator planeGenerator;
-    public Material mat;
-    public bool debugDraw = true;
-    public bool debugDrawNeighboors = false;
-    [Header("Bool run button")]
-    public bool run = false;
-
+    private DivideAndConquer DAC; //Remember to set
+    private int combineRange = 2;
+    private int resolution;
 
     private GridPoint _gridPoint;
     private HashSet<GraphVertex> vertices;
     private HashSet<GridPoint> visited;
     private Queue<GridPoint> queue;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
 
     public void CombineNodes(GraphVertex best, GraphVertex worst)
     {
@@ -43,33 +31,14 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Init(DivideAndConquer divideAndConquer, int resolution)
     {
-        if (run)
-        {
-            run = false;
-            Run();
-
-            foreach (VCell item in DAC.cells)
-            {
-                var cellVertices = vertices.Where(x => x.cellIds.Contains(item.id)).ToList();
-
-                var planes = planeGenerator.GeneratePlanesForCell(item.id, cellVertices);
-
-                foreach (var p in planes)
-                {
-                    p.DebugDrawCenter();
-                }
-
-                //MeshGenerator.GenerateMesh(planes, item.id, mat);
-            }
-
-            //planeGenerator.GeneratePlanesForCell(0, cellid0.ToList());
-        }
+        DAC = divideAndConquer;
+        this.resolution = resolution;
+        vertices = new HashSet<GraphVertex>();
     }
 
-    private void Run()
+    public HashSet<GraphVertex> Run()
     {
         visited = new HashSet<GridPoint>();
         vertices = new HashSet<GraphVertex>();
@@ -94,51 +63,25 @@ public class FloodGraphGenerator : MonoBehaviour
             item.Position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
         }
 
-        // DEBUG: draw balls for the nodes and small balls for "edges"
-        if (debugDraw)
-        {
-            DebugDraw();
-        }
+        return vertices;
     }
 
-    private void DebugDraw()
+    public void DebugDraw()
     {
-        int count = 0;
-
-        if (debugDrawNeighboors)
-        {
-            foreach (GraphVertex item in vertices)
-            {
-                var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
-                ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-                ball.gameObject.name = count++ + ": " + item.ToString();
-
-                foreach (GraphVertex vertex in item.connectedVertices)
-                {
-                    var v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    v.transform.position = DAC.GridPointCenter(vertex.Point.x, vertex.Point.y, vertex.Point.z);
-                    v.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                    v.gameObject.name = vertex.ToString();
-                    v.transform.parent = ball.transform;
-
-                }
-            }
-        }
-
         foreach (GraphVertex item in vertices)
         {
             //Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
-            
+            Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
+            /*
             var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
             ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
             ball.gameObject.name = count++ + ": " + item.ToString();
-            
+            */
 
             foreach (GraphVertex vertex in item.connectedVertices)
             {
-                Debug.DrawLine(item.Position, vertex.Position, Color.white, 5000);
+                Debug.DrawLine(item.Position, vertex.Position, Color.white);
             }
         }
 
@@ -438,14 +381,14 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private bool IsCornerPoint(GridPoint p)
     {
-        int maxIndex = DAC.resolution - 1;
+        int maxIndex = resolution - 1;
         // if all index are either 0 or max value, then the point must be a corner point
         return (p.x == 0 || p.x == maxIndex) && (p.y == 0 || p.y == maxIndex) && (p.z == 0 || p.z == maxIndex);
     }
 
     private bool IsOnSideLine(GridPoint p)
     {
-        int maxIndex = DAC.resolution - 1;
+        int maxIndex = resolution - 1;
         //two coords need to be either 0 or max for the point to allign with a corner 
         int count = 0;
 
@@ -458,7 +401,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private bool IsOnSidePlane(GridPoint p)
     {
-        int maxIndex = DAC.resolution - 1;
+        int maxIndex = resolution - 1;
         //If a single of the coords are either 0 or max value, then the point must be on a side
         return p.x == 0 || p.x == maxIndex || p.y == 0 || p.y == maxIndex || p.z == 0 || p.z == maxIndex;
 

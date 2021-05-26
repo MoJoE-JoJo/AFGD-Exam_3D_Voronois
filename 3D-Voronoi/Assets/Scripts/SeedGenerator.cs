@@ -4,95 +4,26 @@ using UnityEngine;
 
 public class SeedGenerator : MonoBehaviour
 {
-    [Header("Debugging")]
-    public bool drawArea = false;
-    public bool drawSeeds = false;
-    public bool rerun;
-
-    [Header("Algorithm Stuff")]
-    public int resolution;
+    private int resolution;
     private Vector3 origin;
     private List<Vector3> seeds;
-    public float size;
+    private float size;
 
-    private void Update()
+    public void Init(int resolution, Vector3 origin, float size)
     {
-        if (drawArea) DrawArea();
-        if (drawSeeds) DrawSeeds();
-        if (rerun)
-        {
-            rerun = false;
-            GenerateSeeds();
-        }
+        this.resolution = resolution;
+        this.origin = origin;
+        this.size = size;
     }
 
-    private void OnDrawGizmos()
+    public void Run(int seed)
     {
-        if (drawArea) DrawArea();
+        GenerateSeeds(seed);
     }
 
     //----------DEBUGGING METHODS----------
     #region debugging
-    private void DrawArea()
-    {
-        origin = transform.position;
-        //front points
-        var rightBottomFront = origin;
-        var leftTopFront = origin;
-        var rightTopFront = origin;
-
-        //back points
-        var leftBottomBack = origin;
-        var rightBottomBack = origin;
-        var leftTopBack = origin;
-        var rightTopBack = origin;
-
-        //rightBottomFront
-        rightBottomFront.x += size;
-
-        //leftTopFront
-        leftTopFront.y += size;
-
-        //rightTopFront
-        rightTopFront.x += size;
-        rightTopFront.y += size;
-
-        //leftBottomBack
-        leftBottomBack.z += size;
-
-        //rightBottomBack
-        rightBottomBack.x += size;
-        rightBottomBack.z += size;
-
-        //leftTopBack
-        leftTopBack.y += size;
-        leftTopBack.z += size;
-
-        //rightTopBack
-        rightTopBack.x += size;
-        rightTopBack.y += size;
-        rightTopBack.z += size;
-
-        Debug.DrawLine(origin, rightBottomFront, Color.white);
-        Debug.DrawLine(origin, leftTopFront, Color.white);
-        Debug.DrawLine(rightBottomFront, rightTopFront, Color.white);
-        Debug.DrawLine(leftTopFront, rightTopFront, Color.white);
-
-        Debug.DrawLine(leftBottomBack, rightBottomBack, Color.white);
-        Debug.DrawLine(leftBottomBack, leftTopBack, Color.white);
-        Debug.DrawLine(rightBottomBack, rightTopBack, Color.white);
-        Debug.DrawLine(leftTopBack, rightTopBack, Color.white);
-
-        Debug.DrawLine(origin, leftBottomBack, Color.white);
-        Debug.DrawLine(rightBottomFront, rightBottomBack, Color.white);
-        Debug.DrawLine(leftTopFront, leftTopBack, Color.white);
-        Debug.DrawLine(rightTopFront, rightTopBack, Color.white);
-
-
-    }
-
-    
-    private void DrawSeeds()
+    public void DrawSeeds()
     {
         float size = 0.10f;
         if(seeds!= null)
@@ -109,10 +40,12 @@ public class SeedGenerator : MonoBehaviour
 
     #endregion
 
+
     //----------ALGORITHM METHODS----------
     #region algorithm
-    public List<Vector3> GenerateSeeds()
+    public List<Vector3> GenerateSeeds(int randomSeed)
     {
+        Random.InitState(randomSeed);
         origin = transform.position;
 
         /*
@@ -137,8 +70,8 @@ public class SeedGenerator : MonoBehaviour
                         origin.y + (y * size / resolution) + 0.5f * size / resolution,
                         origin.y + (z * size / resolution) + 0.5f * size / resolution);
                     float range = (size / resolution / 2) - 0.1f * size / resolution;
-                    seed.x = Random.Range(seed.x - range, seed.x + range);
                     seed.y = Random.Range(seed.y - range, seed.y + range);
+                    seed.x = Random.Range(seed.x - range, seed.x + range);
                     seed.z = Random.Range(seed.z - range, seed.z + range);
                     seeds.Add(seed);
                 }
