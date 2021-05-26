@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MeshGenerator
 {
-    public static GameObject GenerateMesh(List<CellPlane> planes, VCell cell, Material polyHedronMaterial)
+    public static GameObject GenerateMesh(List<CellPlane> planes, VCell cell, Material polyHedronMaterial, bool useColor, Color polyhedronColor)
     {
         GameObject polyHedron = new GameObject();
         Mesh polyHedronMesh = new Mesh();
@@ -33,7 +33,8 @@ public class MeshGenerator
         {
             normals[i] = -Vector3.forward;
             uv[i] = new Vector2(0, 0);
-            colors[i] = cell.color;
+            if (!useColor) colors[i] = cell.color;
+            else if (useColor) colors[i] = polyhedronColor;
         }
         polyHedronMesh.normals = normals;
         polyHedronMesh.uv = uv;

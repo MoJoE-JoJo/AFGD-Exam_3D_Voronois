@@ -18,9 +18,12 @@ public class RunAlgorithm : MonoBehaviour
     [Tooltip("Random if 0, else it is deterministic")]public int randomSeed;
     public GameObject polyhedronParent;
     public Material polyhedronMaterial;
+    public bool useColor = true;
+    public Color polyhedronColor;
     public float areaSize;
     public int resolutionDivideAndConquer;
     public int resolutionSeed;
+
 
     [Header("-----Algorithm Debugging-----")]
     public bool drawArea;
@@ -110,7 +113,8 @@ public class RunAlgorithm : MonoBehaviour
         seedGenerator.Init(resolutionSeed, area.Origin, areaSize);
         seedsInited = true;
         if (randomSeed == 0) randomSeed = System.DateTime.Now.Ticks.GetHashCode();
-        var seeds = seedGenerator.GenerateSeeds(randomSeed);
+        Random.InitState(randomSeed);
+        var seeds = seedGenerator.GenerateSeeds();
 
         //Divide and conquer
         if (!drawDivideAndConquer) dacDrawType = DEBUGDRAWTYPE.RUN;
@@ -126,7 +130,7 @@ public class RunAlgorithm : MonoBehaviour
         //Render output
         renderStep.Init(polyhedronMaterial, polyhedronParent);
         renderInited = true;
-        renderStep.Run(divideAndConquer, vertices);
+        renderStep.Run(divideAndConquer, vertices, useColor, polyhedronColor);
 
     }
 }

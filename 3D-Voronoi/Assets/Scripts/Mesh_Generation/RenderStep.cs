@@ -18,7 +18,7 @@ public class RenderStep : MonoBehaviour
     }
 
 
-    public void Run(DivideAndConquer DAC, HashSet<GraphVertex> vertices)
+    public void Run(DivideAndConquer DAC, HashSet<GraphVertex> vertices, bool useColor, Color polyhedronColor)
     {
         allCellPlanes = new List<List<CellPlane>>();
         foreach (VCell item in DAC.cells)
@@ -29,7 +29,7 @@ public class RenderStep : MonoBehaviour
             var planes = PlaneGenerator.GeneratePlanesForCell(item.id, cellVertices);
             allCellPlanes.Add(planes);
 
-            var go = MeshGenerator.GenerateMesh(planes, item, polyhedronMaterial);
+            var go = MeshGenerator.GenerateMesh(planes, item, polyhedronMaterial, useColor, polyhedronColor);
             go.transform.parent = polyhedronParent.transform;
         }
     }

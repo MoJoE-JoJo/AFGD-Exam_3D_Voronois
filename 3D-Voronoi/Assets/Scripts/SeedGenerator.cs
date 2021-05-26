@@ -16,9 +16,9 @@ public class SeedGenerator : MonoBehaviour
         this.size = size;
     }
 
-    public void Run(int seed)
+    public void Run()
     {
-        GenerateSeeds(seed);
+        GenerateSeeds();
     }
 
     //----------DEBUGGING METHODS----------
@@ -43,10 +43,8 @@ public class SeedGenerator : MonoBehaviour
 
     //----------ALGORITHM METHODS----------
     #region algorithm
-    public List<Vector3> GenerateSeeds(int randomSeed)
+    public List<Vector3> GenerateSeeds()
     {
-        Random.InitState(randomSeed);
-        origin = transform.position;
 
         /*
         seeds = new List<Vector3>()
