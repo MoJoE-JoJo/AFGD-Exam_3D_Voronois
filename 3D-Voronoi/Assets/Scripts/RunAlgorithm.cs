@@ -124,16 +124,24 @@ public class RunAlgorithm : MonoBehaviour
         divideAndConquer.Init(seeds, resolutionDivideAndConquer, area.Origin, areaSize, dacDrawType);
         gridInited = true;
         divideAndConquer.Run();
+        if (divideAndConquer.GetType() == typeof(LogarithmicDivideAndConquer))
+        {
+            var dnc = (LogarithmicDivideAndConquer)divideAndConquer;
+            Debug.Log("All points checked: " + dnc.counter);
+            Debug.Log("Points in tree checked: " + dnc.kdTree.counter);
+        }
 
+        
         //Flooding, combining
         floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer);
         floodGraphInited = true;
         var vertices = floodGraphGenerator.Run();
 
+        
         //Render output
         renderStep.Init(polyhedronMaterial, polyhedronParent);
         renderInited = true;
         renderStep.Run(divideAndConquer, vertices, useColor, polyhedronColor);
-
+        
     }
 }

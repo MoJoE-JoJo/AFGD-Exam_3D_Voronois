@@ -2,16 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OcTree
+public class KDTree
 {
+    private enum AXIS { X,Y,Z};
     private class Node
     {
-        public bool leaf;
-        public Vector3 center;
-        public Vector3 extents;
-        public Node[] children;
+        public AXIS splittingAxis;
+        public float center;
+        public bool isLeaf;
+        public Node leftChild;
+        public Node rightChild;
         public VecToId[] elements;
     }
+
     private struct VecToId
     {
         public Vector3 vector;
@@ -19,202 +22,234 @@ public class OcTree
     }
 
     private Node root;
-    public int leafSize = 1;
+    private int leafSize = 1;
+    public int counter = 0;
 
-    public void ConstructTree(Vector3 origin, Vector3 size, List<Vector3> points)
+    public void ConstructTree(List<Vector3> points)
     {
-        var rootExtents = size;
-        rootExtents.x = size.x / 2;
-        rootExtents.y = size.y / 2;
-        rootExtents.z = size.z / 2;
-        root = new Node()
-        {
-            leaf = false,
-            center = origin + rootExtents,
-            extents = rootExtents,
-            children = new Node[8],
-            elements = null
-        };
-
         var vecToIdPoints = new List<VecToId>();
 
-        for(int i = 0; i<points.Count; i++)
+        for (int i = 0; i < points.Count; i++)
         {
-            vecToIdPoints.Add(new VecToId() { vector = points[i], id = i});
+            vecToIdPoints.Add(new VecToId() { vector = points[i], id = i });
         }
-        //Check if only one node is needed
-        RecConstruct(root, vecToIdPoints);
-    }
 
-    private void DefineChildAndStartNextRecursion(Node current, int childIndex, Vector3 childCenter, List<VecToId> pointsContained)
-    {
-        var childExtents = current.extents;
-        childExtents.x = current.extents.x / 2;
-        childExtents.y = current.extents.y / 2;
-        childExtents.z = current.extents.z / 2;
-
-        current.children[childIndex] = new Node()
+        int depth = 0;
+        float center = 0;
+        for(int i = 0; i< points.Count; i++)
         {
-            leaf = false,
-            center = childCenter,
-            extents = childExtents,
-            children = null,
+             center += points[i].x;
+        }
+        center = center / points.Count;
+        root = new Node()
+        {
+            isLeaf = false,
+            center = center,
+            splittingAxis = AXIS.X,
+            leftChild = null,
+            rightChild = null,
             elements = null
         };
-        RecConstruct(current.children[childIndex], pointsContained);
+        RecConstruct(root, vecToIdPoints, depth);
     }
 
-    private void RecConstruct(Node node, List<VecToId> points)
+    private void RecConstruct(Node node, List<VecToId> points, int depth)
     {
-        if (points.Count == leafSize)
+        if (points.Count <= leafSize)
         {
             node.elements = new VecToId[points.Count];
             for (int i = 0; i < node.elements.Length; i++)
             {
                 node.elements[i] = points[i];
             }
-            node.leaf = true;
+            node.isLeaf = true;
+            
         }
         else
         {
-            node.children = new Node[8];
-            List<VecToId> xLeftYBottomZFront = new List<VecToId>();
-            List<VecToId> xLeftYBottomZBack = new List<VecToId>();
-            List<VecToId> xLeftYTopZFront = new List<VecToId>();
-            List<VecToId> xLeftYTopZBack = new List<VecToId>();
-
-            List<VecToId> xRightYBottomZFront = new List<VecToId>();
-            List<VecToId> xRightYBottomZBack = new List<VecToId>();
-            List<VecToId> xRightYTopZFront = new List<VecToId>();
-            List<VecToId> xRightYTopZBack = new List<VecToId>();
+            AXIS axis = (AXIS)(depth % 3);
+            List<VecToId> leftPoints = new List<VecToId>();
+            List<VecToId> rightPoints = new List<VecToId>();
 
             foreach (VecToId vecToId in points)
             {
-                if (vecToId.vector.x < node.center.x && vecToId.vector.y < node.center.y && vecToId.vector.z < node.center.z)
+                if (axis == AXIS.X)
                 {
-                    xLeftYBottomZFront.Add(vecToId);
+                    if (vecToId.vector.x < node.center) leftPoints.Add(vecToId);
+                    else rightPoints.Add(vecToId);
                 }
-                else if (vecToId.vector.x < node.center.x && vecToId.vector.y < node.center.y && vecToId.vector.z >= node.center.z)
+                else if (axis == AXIS.Y)
                 {
-                    xLeftYBottomZBack.Add(vecToId);
+                    if (vecToId.vector.y < node.center) leftPoints.Add(vecToId);
+                    else rightPoints.Add(vecToId);
                 }
-                else if (vecToId.vector.x < node.center.x && vecToId.vector.y >= node.center.y && vecToId.vector.z < node.center.z)
+                else if (axis == AXIS.Z)
                 {
-                    xLeftYTopZFront.Add(vecToId);
-                }
-                else if (vecToId.vector.x < node.center.x && vecToId.vector.y >= node.center.y && vecToId.vector.z >= node.center.z)
-                {
-                    xLeftYTopZBack.Add(vecToId);
-                }
-
-                else if (vecToId.vector.x >= node.center.x && vecToId.vector.y < node.center.y && vecToId.vector.z < node.center.z)
-                {
-                    xRightYBottomZFront.Add(vecToId);
-                }
-                else if (vecToId.vector.x >= node.center.x && vecToId.vector.y < node.center.y && vecToId.vector.z >= node.center.z)
-                {
-                    xRightYBottomZBack.Add(vecToId);
-                }
-                else if (vecToId.vector.x >= node.center.x && vecToId.vector.y >= node.center.y && vecToId.vector.z < node.center.z)
-                {
-                    xRightYTopZFront.Add(vecToId);
-                }
-                else if (vecToId.vector.x >= node.center.x && vecToId.vector.y >= node.center.y && vecToId.vector.z >= node.center.z)
-                {
-                    xRightYTopZBack.Add(vecToId);
+                    if (vecToId.vector.z < node.center) leftPoints.Add(vecToId);
+                    else rightPoints.Add(vecToId);
                 }
             }
-
-            if (xLeftYBottomZFront.Count > 0)
+            var newDepth = depth + 1;
+            var newAxis = (AXIS)(newDepth % 3);
+            var leftCenter = 0f;
+            var rightCenter = 0f;
+            if (newAxis == AXIS.X)
             {
-                var childCenter = node.center;
-                childCenter.x -= node.extents.x / 2;
-                childCenter.y -= node.extents.y / 2;
-                childCenter.z -= node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 0, childCenter, xLeftYBottomZFront);
+                for (int i = 0; i < leftPoints.Count; i++)
+                {
+                    leftCenter += leftPoints[i].vector.x;
+                }
+                for (int i = 0; i < rightPoints.Count; i++)
+                {
+                    rightCenter += rightPoints[i].vector.x;
+                }
+                leftCenter = leftCenter / leftPoints.Count;
+                rightCenter = rightCenter / rightPoints.Count;
             }
-            if (xLeftYBottomZBack.Count > 0)
+            else if (newAxis == AXIS.Y)
             {
-                var childCenter = node.center;
-                childCenter.x -= node.extents.x / 2;
-                childCenter.y -= node.extents.y / 2;
-                childCenter.z += node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 1, childCenter, xLeftYBottomZBack);
+                for (int i = 0; i < leftPoints.Count; i++)
+                {
+                    leftCenter += leftPoints[i].vector.y;
+                }
+                for (int i = 0; i < rightPoints.Count; i++)
+                {
+                    rightCenter += rightPoints[i].vector.y;
+                }
+                leftCenter = leftCenter / leftPoints.Count;
+                rightCenter = rightCenter / rightPoints.Count;
             }
-            if (xLeftYTopZFront.Count > 0)
+            else if (newAxis == AXIS.Z)
             {
-                var childCenter = node.center;
-                childCenter.x -= node.extents.x / 2;
-                childCenter.y += node.extents.y / 2;
-                childCenter.z -= node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 2, childCenter, xLeftYTopZFront);
+                for (int i = 0; i < leftPoints.Count; i++)
+                {
+                    leftCenter += leftPoints[i].vector.z;
+                }
+                for (int i = 0; i < rightPoints.Count; i++)
+                {
+                    rightCenter += rightPoints[i].vector.z;
+                }
+                leftCenter = leftCenter / leftPoints.Count;
+                rightCenter = rightCenter / rightPoints.Count;
             }
-            if (xLeftYTopZBack.Count > 0)
+
+            node.leftChild = new Node()
             {
-                var childCenter = node.center;
-                childCenter.x -= node.extents.x / 2;
-                childCenter.y += node.extents.y / 2;
-                childCenter.z += node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 3, childCenter, xLeftYTopZBack);
-            }
-            if (xRightYBottomZFront.Count > 0)
+                isLeaf = false,
+                center = leftCenter,
+                splittingAxis = newAxis,
+                leftChild = null,
+                rightChild = null,
+                elements = null
+            };
+            node.rightChild = new Node()
             {
-                var childCenter = node.center;
-                childCenter.x += node.extents.x / 2;
-                childCenter.y -= node.extents.y / 2;
-                childCenter.z -= node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 4, childCenter, xRightYBottomZFront);
-            }
-            if (xRightYBottomZBack.Count > 0)
-            {
-                var childCenter = node.center;
-                childCenter.x += node.extents.x / 2;
-                childCenter.y -= node.extents.y / 2;
-                childCenter.z += node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 5, childCenter, xRightYBottomZBack);
-            }
-            if (xRightYTopZFront.Count > 0)
-            {
-                var childCenter = node.center;
-                childCenter.x += node.extents.x / 2;
-                childCenter.y += node.extents.y / 2;
-                childCenter.z -= node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 6, childCenter, xRightYTopZFront);
-            }
-            if (xRightYTopZBack.Count > 0)
-            {
-                var childCenter = node.center;
-                childCenter.x += node.extents.x / 2;
-                childCenter.y += node.extents.y / 2;
-                childCenter.z += node.extents.z / 2;
-
-                DefineChildAndStartNextRecursion(node, 7, childCenter, xRightYTopZBack);
-            }
+                isLeaf = false,
+                center = rightCenter,
+                splittingAxis = newAxis,
+                leftChild = null,
+                rightChild = null,
+                elements = null
+            };
+            RecConstruct(node.leftChild, leftPoints, newDepth);
+            RecConstruct(node.rightChild, rightPoints, newDepth);
         }
     }
 
-
-
-
     public int FindNearestElement(Vector3 point)
     {
+        var champion = new VecToId() { id = -1};
+        if (point.x < root.center)
+        {
+            RecFNE(root.leftChild, point, ref champion);
+            var champDis = (champion.vector - point).magnitude;
+            var disToCenter = Mathf.Abs(root.center - point.x);
+            if (disToCenter <= champDis) RecFNE(root.rightChild, point, ref champion);
+        }
+        else
+        {
+            RecFNE(root.rightChild, point, ref champion);
+            var champDis = (champion.vector - point).magnitude;
+            var disToCenter = Mathf.Abs(root.center - point.x);
+            if (disToCenter <= champDis) RecFNE(root.leftChild, point, ref champion);
+        }
 
-        return 0;
+            return champion.id;
     }
 
+    private void RecFNE(Node node, Vector3 point, ref VecToId champion)
+    {
+        if (node.isLeaf)
+        {
+            counter++;
+            if (champion.id == -1) champion = node.elements[0];
+            else
+            {
+                var champDis = (champion.vector - point).magnitude;
+                var nodeElementDis = (node.elements[0].vector - point).magnitude;
+                if (nodeElementDis < 0) Debug.Log(nodeElementDis);
+                if (nodeElementDis <= champDis) champion = node.elements[0];
+            }
+            return;
+        }
+        if (node.splittingAxis == AXIS.X)
+        {
+            if (point.x < node.center)
+            {
+                RecFNE(node.leftChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center- point.x);
+                if(disToCenter<= champDis) RecFNE(node.rightChild, point, ref champion);
+            }
+            else
+            {
+                RecFNE(node.rightChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center - point.x);
+                if (disToCenter <= champDis) RecFNE(node.leftChild, point, ref champion);
+            }
+        }
+        else if (node.splittingAxis == AXIS.Y)
+        {
+            if (point.y < node.center)
+            {
+                RecFNE(node.leftChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center - point.y);
+                if (disToCenter <= champDis) RecFNE(node.rightChild, point, ref champion);
+            }
+            else
+            {
+                RecFNE(node.rightChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center - point.y);
+                if (disToCenter <= champDis) RecFNE(node.leftChild, point, ref champion);
+            }
+        }
+        else if (node.splittingAxis == AXIS.Z)
+        {
+            if (point.z < node.center)
+            {
+                RecFNE(node.leftChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center - point.z);
+                if (disToCenter <= champDis) RecFNE(node.rightChild, point, ref champion);
+            }
+            else
+            {
+                RecFNE(node.rightChild, point, ref champion);
+                var champDis = (champion.vector - point).magnitude;
+                var disToCenter = Mathf.Abs(node.center - point.z);
+                if (disToCenter <= champDis) RecFNE(node.leftChild, point, ref champion);
+            }
+        }
+    }
 }
 
 public class LogarithmicDivideAndConquer : DivideAndConquer
 {
     private Queue<(int, int, int, int, int, int)> pointsToCheck = new Queue<(int, int, int, int, int, int)>();
-    private OcTree ocTree;
+    public KDTree kdTree;
     override protected void DividAndConquer()
     {
         //Step 1: calculate Points
@@ -354,28 +389,16 @@ public class LogarithmicDivideAndConquer : DivideAndConquer
 
     private void BuildTree()
     {
-        ocTree = new OcTree();
-        ocTree.ConstructTree(origin, size, seedPoints);
+        kdTree = new KDTree();
+        kdTree.ConstructTree(seedPoints);
         Debug.Log("yolo");
     }
-
+    public int counter = 0;
     override protected int FindNearestSeed(int x, int y, int z)
     {
+        counter += resolution.x * resolution.y * resolution.z;
         var center = GridPointCenter(x, y, z);
-
-        float distance = (seedPoints[0] - center).magnitude;
-
-        var returnID = 0;
-        for (int i = 1; i < seedPoints.Count; i++)
-        {
-            float newDistance = (seedPoints[i] - center).magnitude;
-            if (newDistance < distance)
-            {
-                distance = newDistance;
-                returnID = i;
-            }
-        }
-
+        var returnID = kdTree.FindNearestElement(center);
         return returnID;
     }
 }

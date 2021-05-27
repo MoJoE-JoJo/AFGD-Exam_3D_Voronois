@@ -54,7 +54,7 @@ public class MeshGenerator
         highlight.Init(cell.color, meshRenderer);
         
         //Instantiate(polyHedron, cell.seed, Quaternion.identity);
-        Debug.Log(tris.Count);
+        //Debug.Log(tris.Count);
         return polyHedron;
     }
 

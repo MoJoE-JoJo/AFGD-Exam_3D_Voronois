@@ -21,7 +21,7 @@ public class FloodGraphGenerator : MonoBehaviour
         var gp = best.Point;
         if (gp.x == 40 && gp.y == 37 && gp.z == 30)
         {
-            Debug.Log("poop");
+            //Debug.Log("poop");
         }
 
         // Take the Cell IDs of the other vertex
@@ -54,7 +54,7 @@ public class FloodGraphGenerator : MonoBehaviour
             visited.Add(cell.points[0]);
 
             VertexFlood(cell.id);
-            Debug.Log($"Done with cell -> {cell.id}");
+            //Debug.Log($"Done with cell -> {cell.id}");
         }
 
         foreach (GraphVertex item in vertices)
@@ -156,7 +156,7 @@ public class FloodGraphGenerator : MonoBehaviour
                                 int offset = 2;
                                 if (AreOtherVerticesWithinrange(_gridPoint, combineRange + offset))
                                 {
-                                    Debug.Log("WOLLOWO");
+                                    //Debug.Log("WOLLOWO");
                                     offset = 0;
                                 }
 
@@ -285,7 +285,7 @@ public class FloodGraphGenerator : MonoBehaviour
         {
             if (gp.x == 40 && gp.y == 37 && gp.z == 30)
             {
-                Debug.Log("poop");
+                //Debug.Log("poop");
             }
 
             newNode = new GraphVertex(gp, prio, cellID);
