@@ -18,7 +18,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
     public void CombineNodes(GraphVertex best, GraphVertex worst)
     {
-        var gp = best.Point;
+        var gp = best.GridPoint;
         if (gp.x == 40 && gp.y == 37 && gp.z == 30)
         {
             //Debug.Log("poop");
@@ -79,7 +79,7 @@ public class FloodGraphGenerator : MonoBehaviour
         foreach (GraphVertex item in vertices)
         {
             //Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
-            Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
+            Gizmos.DrawSphere(DAC.GridPointCenter(item.GridPoint.x, item.GridPoint.y, item.GridPoint.z), 0.2f);
             /*
             var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
@@ -347,7 +347,7 @@ public class FloodGraphGenerator : MonoBehaviour
             if (surroundingCells.Keys.Count >= 1)
             {
                 // if on side line, give a boost to prio
-                prio += 7 * _combineRange;
+                prio += 7 * combineRange;
                 createNewVertex = true;
             }
         }
@@ -357,7 +357,7 @@ public class FloodGraphGenerator : MonoBehaviour
             if (surroundingCells.Keys.Count >= 2)
             {
                 // if on side plane, give a small boost to prio
-                prio += 5 * _combineRange;
+                prio += 5 * combineRange;
                 createNewVertex = true;
             }
         }
@@ -382,7 +382,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
             List<GraphVertex> currentVertices;
             List<GraphVertex> toDelete = new List<GraphVertex>();
-            if (FindNearbyVertex(newVertex.GridPoint, _combineRange, out currentVertices))
+            if (FindNearbyVertex(newVertex.GridPoint, combineRange, out currentVertices))
             {
                 foreach (var vertex in currentVertices)
                 {
