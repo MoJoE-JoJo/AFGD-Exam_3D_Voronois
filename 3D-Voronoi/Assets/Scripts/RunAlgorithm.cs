@@ -23,7 +23,7 @@ public class RunAlgorithm : MonoBehaviour
     public float areaSize;
     public int resolutionDivideAndConquer;
     public int resolutionSeed;
-    [Range(2, 10)] public int floodCombineRange = 3;
+    [Range(1, 10)] public int floodCombineRange = 4;
 
     [Header("-----Algorithm Debugging-----")]
     public bool drawArea;

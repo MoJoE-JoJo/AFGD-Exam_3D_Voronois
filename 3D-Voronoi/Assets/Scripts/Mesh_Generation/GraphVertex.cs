@@ -7,13 +7,13 @@ public class GraphVertex
     public List<int> cellIds;
     public List<GraphVertex> connectedVertices;
     public Vector3 Position { get; set; }
-    public GridPoint Point { get; set; }
+    public GridPoint GridPoint { get; set; }
     //private MemDivideAndConquer3D memDnC;
     public int Priotity { get; set; }
 
     public GraphVertex(GridPoint p, int prio, int cellID)
     {
-        Point = p;
+        GridPoint = p;
         connectedVertices = new List<GraphVertex>();
         cellIds = new List<int> { cellID };
         Priotity = prio;
@@ -37,7 +37,10 @@ public class GraphVertex
     {
         if (!cellIds.Contains(id)) cellIds.Add(id);
     }
-
+    /// <summary>
+    /// Adds the vertex v to the list, but only if its not already there. (so it treats the list as a set)
+    /// </summary>
+    /// <param name="v"></param>
     public void AddConnection(GraphVertex v)
     {
         if (!connectedVertices.Contains(v)) connectedVertices.Add(v);
@@ -59,7 +62,7 @@ public class GraphVertex
 
     public override string ToString()
     {
-        return $"({Point.x}, {Point.y}, {Point.z}) CellCount: {cellIds.Count}";
+        return $"({GridPoint.x}, {GridPoint.y}, {GridPoint.z}) CellCount: {cellIds.Count}";
     }
 
     public override bool Equals(object obj)
@@ -73,7 +76,7 @@ public class GraphVertex
         {
             // compare the points in their gridpoint coordinates
             GraphVertex n = (GraphVertex)obj;
-            return (n.Point == Point);
+            return (n.GridPoint == GridPoint);
         }
     }
     public override int GetHashCode()
