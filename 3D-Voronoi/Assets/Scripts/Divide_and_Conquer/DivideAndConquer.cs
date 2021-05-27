@@ -77,7 +77,7 @@ abstract public class DivideAndConquer : MonoBehaviour
     private void SetSeeds(List<Vector3> seeds)
     {
         seedPoints = seeds;
-        origin = transform.position;
+        //origin = transform.position;
         cells = new List<VCell>();
         for (int i = 0; i < seedPoints.Count; i++)
         {
