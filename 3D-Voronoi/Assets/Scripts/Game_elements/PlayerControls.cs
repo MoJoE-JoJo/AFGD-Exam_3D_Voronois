@@ -22,6 +22,7 @@ public class PlayerControls : MonoBehaviour
     public Image colorIndicator;
     public GameObject hammer;
     public GameObject gun;
+    public bool canMove = true;
 
 
     // Private variables for mousemovement and looking
@@ -47,7 +48,7 @@ public class PlayerControls : MonoBehaviour
     void Update()
     {
         MouseLook();
-        UpdateMovement();
+        if(canMove)UpdateMovement();
         UpdateRaycast();
 
         //Add some code for triggering highlight of mesh
