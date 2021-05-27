@@ -33,6 +33,7 @@ public class RunAlgorithm : MonoBehaviour
     [SerializeField] private bool drawSeeds;
     [SerializeField] private DEBUGDRAWTYPE dacDrawType;
     [SerializeField] private bool drawDivideAndConquer;
+    [SerializeField] private bool runOnlyDivideAndConquer;
     [SerializeField] private bool drawFloodedGraph;
     [SerializeField] private bool drawFaceCentroids;
     [SerializeField] private bool hidePolyhedrons;
@@ -131,17 +132,18 @@ public class RunAlgorithm : MonoBehaviour
             Debug.Log("Points in tree checked: " + dnc.kdTree.counter);
         }
 
-        
-        //Flooding, combining
-        floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer);
-        floodGraphInited = true;
-        var vertices = floodGraphGenerator.Run();
+        if (!runOnlyDivideAndConquer)
+        {
+            //Flooding, combining
+            floodGraphGenerator.Init(divideAndConquer, resolutionDivideAndConquer);
+            floodGraphInited = true;
+            var vertices = floodGraphGenerator.Run();
 
-        
-        //Render output
-        renderStep.Init(polyhedronMaterial, polyhedronParent);
-        renderInited = true;
-        renderStep.Run(divideAndConquer, vertices, useColor, polyhedronColor);
+            //Render output
+            renderStep.Init(polyhedronMaterial, polyhedronParent);
+            renderInited = true;
+            renderStep.Run(divideAndConquer, vertices, useColor, polyhedronColor);
+        }
         
     }
 }

@@ -23,10 +23,25 @@ public class PlayerControls : MonoBehaviour
     public GameObject hammer;
     public GameObject gun;
     public bool canMove = true;
-
+    public AudioSource hammerSound;
+    public AudioSource swingHammerAudio;
+    public AudioSource gunSound;
+    public AudioSource jumpSound;
+    public AudioSource landingSound;
+    public ParticleSystem gunParticles;
+    public float hammerStartRotation;
+    public float hammerEndRotation;
+    public float hammerSwingSpeedForward;
+    public float hammerSwingSpeedBackward;
 
     // Private variables for mousemovement and looking
+    private bool inAir = false;
+    private bool swingHammer = false;
+    private bool swingHammerForward = true;
+    private float swingHammerCounter = 0;
     private bool hammerEquipped = true;
+    private Quaternion startHammerQuat;
+    private Quaternion endHammerQuat;
     private int currentColor = 0;
     private float cameraPitch = 0.0f;
     private GameObject highlighted;
@@ -43,12 +58,28 @@ public class PlayerControls : MonoBehaviour
         controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         colorIndicator.color = colors[currentColor];
+
+        startHammerQuat = hammer.transform.localRotation;
+        var startRot = startHammerQuat.eulerAngles;
+        startRot.x = hammerStartRotation;
+        startHammerQuat.eulerAngles = startRot;
+
+        endHammerQuat = hammer.transform.localRotation;
+        var endRot = endHammerQuat.eulerAngles;
+        endRot.x = hammerEndRotation;
+        endHammerQuat.eulerAngles = endRot;
     }
 
     void Update()
     {
+        SwingHammer();
         MouseLook();
-        if(canMove)UpdateMovement();
+        if(canMove)UpdateMovement();      
+        if (inAir && controller.isGrounded)
+        {
+            inAir = false;
+            landingSound.Play();
+        }
         UpdateRaycast();
 
         //Add some code for triggering highlight of mesh
@@ -63,10 +94,30 @@ public class PlayerControls : MonoBehaviour
         {
             if (highlighted != null)
             {
-                if(hammerEquipped) highlighted.SetActive(false);
+                if (hammerEquipped)
+                {
+                    ResetHammerSwing();
+                    swingHammer = true;
+                    HammerJuice();
+                    highlighted.SetActive(false);
+                }
                 else if (!hammerEquipped)
                 {
+                    GunJuice();
                     highlighted.GetComponent<HighLightMesh>().baseColor = colors[currentColor];
+                }
+            }
+            else if(highlighted == null)
+            {
+                if (hammerEquipped)
+                {
+                    ResetHammerSwing();
+                    swingHammer = true;
+                    swingHammerAudio.Play();
+                }
+                else if (!hammerEquipped)
+                {
+                    GunJuice();
                 }
             }
         }
@@ -83,6 +134,60 @@ public class PlayerControls : MonoBehaviour
             SwitchTool();
         }
 
+    }
+    private void HammerJuice()
+    {
+        hammerSound.Play();
+    }
+    private void ResetHammerSwing()
+    {
+        var quat = hammer.transform.localRotation;
+        quat.x = hammerStartRotation;
+        hammer.transform.localRotation = quat;
+        swingHammerCounter = 0f;
+        swingHammerForward = true;
+        swingHammer = false;
+    }
+    private void SwingHammer()
+    {
+        if (!hammer.activeInHierarchy)
+        {
+            ResetHammerSwing();
+        }
+        else
+        {
+            if (swingHammer)
+            {
+                if (swingHammerForward)
+                {
+                    swingHammerCounter += Time.deltaTime * hammerSwingSpeedForward;
+                    var newRot = Quaternion.Lerp(startHammerQuat, endHammerQuat, swingHammerCounter);
+                    hammer.transform.localRotation = newRot;
+                    if(swingHammerCounter >= 1f)
+                    {
+                        swingHammerCounter = 0f;
+                        swingHammerForward = false;
+                    }
+                }
+                else if (!swingHammerForward)
+                {
+                    swingHammerCounter += Time.deltaTime * hammerSwingSpeedBackward;
+                    var newRot = Quaternion.Lerp(endHammerQuat, startHammerQuat, swingHammerCounter);
+                    hammer.transform.localRotation = newRot;
+                    if (swingHammerCounter >= 1f)
+                    {
+                        ResetHammerSwing();
+                    }
+                }
+            }
+        }
+    }
+    private void GunJuice()
+    {
+        gunSound.Play();
+        var main = gunParticles.main;
+        main.startColor = colors[currentColor];
+        gunParticles.Play();
     }
     private void SwitchTool()
     {
@@ -153,7 +258,12 @@ public class PlayerControls : MonoBehaviour
             velocity = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
             velocity = transform.TransformDirection(velocity);
             velocity *= MoveSpeed;
-            if (Input.GetButton("Jump")) velocity.y = JumpForce;
+            if (Input.GetButton("Jump"))
+            {
+                inAir = true;
+                jumpSound.Play();
+                velocity.y = JumpForce;
+            }
         }
         else
         {
