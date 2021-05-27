@@ -5,8 +5,8 @@ using UnityEngine;
 public class VoronoiArea : MonoBehaviour
 {
     public Vector3 Origin { get => transform.position; }
-    private float size;
-    public void Init(float size)
+    private Vector3 size;
+    public void Init(Vector3 size)
     {
         this.size = size;
     }
@@ -25,30 +25,30 @@ public class VoronoiArea : MonoBehaviour
         var rightTopBack = Origin;
 
         //rightBottomFront
-        rightBottomFront.x += size;
+        rightBottomFront.x += size.x;
 
         //leftTopFront
-        leftTopFront.y += size;
+        leftTopFront.y += size.y;
 
         //rightTopFront
-        rightTopFront.x += size;
-        rightTopFront.y += size;
+        rightTopFront.x += size.x;
+        rightTopFront.y += size.y;
 
         //leftBottomBack
-        leftBottomBack.z += size;
+        leftBottomBack.z += size.z;
 
         //rightBottomBack
-        rightBottomBack.x += size;
-        rightBottomBack.z += size;
+        rightBottomBack.x += size.x;
+        rightBottomBack.z += size.z;
 
         //leftTopBack
-        leftTopBack.y += size;
-        leftTopBack.z += size;
+        leftTopBack.y += size.y;
+        leftTopBack.z += size.z;
 
         //rightTopBack
-        rightTopBack.x += size;
-        rightTopBack.y += size;
-        rightTopBack.z += size;
+        rightTopBack.x += size.x;
+        rightTopBack.y += size.y;
+        rightTopBack.z += size.z;
 
         Debug.DrawLine(Origin, rightBottomFront, Color.white);
         Debug.DrawLine(Origin, leftTopFront, Color.white);

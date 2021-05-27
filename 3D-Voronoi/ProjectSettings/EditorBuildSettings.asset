@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Sculpting.unity
+    guid: 13da5f89448d8f643ad9a4fdab48d213
   m_configObjects: {}

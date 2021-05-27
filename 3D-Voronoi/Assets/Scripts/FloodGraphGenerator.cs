@@ -8,8 +8,8 @@ public class FloodGraphGenerator : MonoBehaviour
 {
 
     private DivideAndConquer DAC; //Remember to set
-    private int _combineRange = 5;
-    private int resolution;
+    private int combineRange = 2;
+    private Vector3Int resolution;
 
     private GridPoint _gridPoint;
     private HashSet<GraphVertex> vertices;
@@ -18,18 +18,23 @@ public class FloodGraphGenerator : MonoBehaviour
 
     public void CombineNodes(GraphVertex best, GraphVertex worst)
     {
-        // add the Cell IDs of the other vertex
+        var gp = best.Point;
+        if (gp.x == 40 && gp.y == 37 && gp.z == 30)
+        {
+            //Debug.Log("poop");
+        }
+
+        // Take the Cell IDs of the other vertex
         foreach (int item in worst.cellIds)
         {
             best.AddCellID(item);
         }
     }
 
-    public void Init(DivideAndConquer divideAndConquer, int resolution, int combineRange)
+    public void Init(DivideAndConquer divideAndConquer, Vector3Int resolution)
     {
         DAC = divideAndConquer;
         this.resolution = resolution;
-        _combineRange = combineRange;
         vertices = new HashSet<GraphVertex>();
     }
 
@@ -49,7 +54,7 @@ public class FloodGraphGenerator : MonoBehaviour
             visited.Add(cell.points[0]);
 
             VertexFlood(cell.id);
-            Debug.Log($"Done with cell -> {cell.id}");
+            //Debug.Log($"Done with cell -> {cell.id}");
         }
 
         foreach (GraphVertex item in vertices)
@@ -61,31 +66,25 @@ public class FloodGraphGenerator : MonoBehaviour
         return vertices;
     }
 
-    //int count = 0;
-    //bool onetime = true;
     public void DebugDraw()
     {
         foreach (GraphVertex item in vertices)
         {
             //Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
             Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
-
-            //if (onetime)
-            //{
-            //    var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //    ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
-            //    ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-            //    ball.gameObject.name = count++ + ": " + item.ToString();
-
-            //}
-
+            /*
+            var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
+            ball.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            ball.gameObject.name = count++ + ": " + item.ToString();
+            */
 
             foreach (GraphVertex vertex in item.connectedVertices)
             {
                 Debug.DrawLine(item.Position, vertex.Position, Color.white);
             }
         }
-        //onetime = false;
+
     }
 
     private void VertexFlood(int cellID)
@@ -120,7 +119,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
             // The max amount of connections a vertex can have is 4, so stop when 4 is found
             // This might cause problems in certain cases???
-            if (found || item.connectedVertices.Count >= 4)
+            if (found || item.connectedVertices.Count >= 4) 
             {
                 continue;
             }
@@ -149,19 +148,21 @@ public class FloodGraphGenerator : MonoBehaviour
                         {
                             if (IsPointNode(_gridPoint))
                             {
+
                                 GraphVertex n = vertices.Where(p => p.Point == _gridPoint).First();
                                 found = true;
                                 //add connection to origin
                                 item.AddConnection(n);
                                 int offset = 2;
-                                if (AreOtherVerticesWithinrange(_gridPoint, _combineRange + offset))
+                                if (AreOtherVerticesWithinrange(_gridPoint, combineRange + offset))
                                 {
+                                    //Debug.Log("WOLLOWO");
                                     offset = 0;
                                 }
 
                                 foreach (var ele in ConnectionQueue)
                                 {
-                                    if (PointInRange(_gridPoint, ele.GridPoint, _combineRange + offset))
+                                    if (PointInRange(_gridPoint, ele.GridPoint, combineRange + offset)) 
                                     {
                                         ele.FoundPoint = true;
                                     }
@@ -284,7 +285,7 @@ public class FloodGraphGenerator : MonoBehaviour
         {
             if (gp.x == 40 && gp.y == 37 && gp.z == 30)
             {
-                Debug.Log("poop");
+                //Debug.Log("poop");
             }
 
             newNode = new GraphVertex(gp, prio, cellID);
@@ -302,17 +303,17 @@ public class FloodGraphGenerator : MonoBehaviour
                     continue;
                 }
                 // if node is nearby
-                if (PointInRange(gp, p, _combineRange))
+                if (PointInRange(gp, p, combineRange))
                 {
                     if (newNode.Priotity > vertex.Priotity) // the new node is a better candidate, eat the nearby node n, and mark it for deletion
                     {
-                        CombineNodes(newNode, vertex);
+                        //CombineNodes(newNode, vertex);
                         toDelete.Add(vertex);
                     }
                     else
                     {
                         // let the existing node, eat the new one, set bool to not create a new node
-                        CombineNodes(vertex, newNode);
+                        //CombineNodes(vertex, newNode);
 
                         createNewNode = false;
                         newNode = vertex;
@@ -380,29 +381,38 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private bool IsCornerPoint(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         // if all index are either 0 or max value, then the point must be a corner point
-        return (p.x == 0 || p.x == maxIndex) && (p.y == 0 || p.y == maxIndex) && (p.z == 0 || p.z == maxIndex);
+        return (p.x == 0 || p.x == maxIndexX) && (p.y == 0 || p.y == maxIndexY) && (p.z == 0 || p.z == maxIndexZ);
     }
 
     private bool IsOnSideLine(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         //two coords need to be either 0 or max for the point to allign with a corner 
         int count = 0;
 
-        if (p.x == 0 || p.x == maxIndex) count++;
-        if (p.y == 0 || p.y == maxIndex) count++;
-        if (p.z == 0 || p.z == maxIndex) count++;
+        if (p.x == 0 || p.x == maxIndexX) count++;
+        if (p.y == 0 || p.y == maxIndexY) count++;
+        if (p.z == 0 || p.z == maxIndexZ) count++;
 
         return count == 2;
     }
 
     private bool IsOnSidePlane(GridPoint p)
     {
-        int maxIndex = resolution - 1;
+        int maxIndexX = resolution.x - 1;
+        int maxIndexY = resolution.y - 1;
+        int maxIndexZ = resolution.z - 1;
+
         //If a single of the coords are either 0 or max value, then the point must be on a side
-        return p.x == 0 || p.x == maxIndex || p.y == 0 || p.y == maxIndex || p.z == 0 || p.z == maxIndex;
+        return p.x == 0 || p.x == maxIndexX || p.y == 0 || p.y == maxIndexY || p.z == 0 || p.z == maxIndexZ;
 
     }
 }

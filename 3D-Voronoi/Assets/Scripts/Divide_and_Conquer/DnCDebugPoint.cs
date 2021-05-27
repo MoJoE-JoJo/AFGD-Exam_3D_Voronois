@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DnCDebugPoint : MonoBehaviour
+public class DnCDebugPoint
 {
     public float x; //Along x-axis. Total span
     public float y; //Along y-axis. Total span 

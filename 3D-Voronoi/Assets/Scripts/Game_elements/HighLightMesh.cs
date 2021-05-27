@@ -9,7 +9,7 @@ public class HighLightMesh : MonoBehaviour
     public Color highLightColor = Color.white;
     private bool donehighighting = false;
     private MeshRenderer meshrend;
-    private Color baseColor;
+    public Color baseColor;
 
     // Update is called once per frame sadas 
     void Update()
