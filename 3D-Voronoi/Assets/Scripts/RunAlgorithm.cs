@@ -24,9 +24,7 @@ public class RunAlgorithm : MonoBehaviour
     [SerializeField] private Vector3 areaSize;
     [SerializeField] [Tooltip("Values that are too different can result in faulty results")] private Vector3Int resolutionDivideAndConquer;
     [SerializeField] private Vector3Int resolutionSeed;
-
-
-
+    [SerializeField][Range(1, 10)] private int floodCombineRange = 4;
 
     [Header("-----Algorithm Debugging-----")]
     [SerializeField] private bool drawArea;
