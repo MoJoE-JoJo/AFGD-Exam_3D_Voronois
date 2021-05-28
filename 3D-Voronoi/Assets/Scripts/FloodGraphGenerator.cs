@@ -16,15 +16,13 @@ public class FloodGraphGenerator : MonoBehaviour
     private HashSet<GridPoint> visited;
     private Queue<GridPoint> queue;
 
-    public void CombineNodes(GraphVertex best, GraphVertex worst)
+    /// <summary>
+    /// Takes the cellIDs stored in the worst and adds them the best Vertex
+    /// </summary>
+    /// <param name="best"></param>
+    /// <param name="worst">The best vertex</param>
+    public void CombineVertices(GraphVertex best, GraphVertex worst)
     {
-        var gp = best.GridPoint;
-        if (gp.x == 40 && gp.y == 37 && gp.z == 30)
-        {
-            //Debug.Log("poop");
-        }
-
-        // Take the Cell IDs of the other vertex
         foreach (int item in worst.cellIds)
         {
             best.AddCellID(item);
@@ -42,33 +40,23 @@ public class FloodGraphGenerator : MonoBehaviour
     {
         visited = new HashSet<GridPoint>();
         vertices = new HashSet<GraphVertex>();
-        // for each cell created by Divide and conquer, start a flood
+        // for each cell created by Divide and conquer, start a flood for finding Vertices
         foreach (VCell cell in DAC.cells)
         {
-            // ===reset queue and visited when starting on a new cell
+            //reset queue when starting on a new cell
 
             queue = new Queue<GridPoint>();
-            visited = new HashSet<GridPoint>();
 
             queue.Enqueue(cell.points[0]);
             visited.Add(cell.points[0]);
 
             VertexFlood(cell.id);
-            //Debug.Log($"Done with cell -> {cell.id}");
         }
 
         foreach (GraphVertex vertex in vertices)
         {
-
             ConnectionFlood(vertex);
             vertex.Position = DAC.GridPointCenter(vertex.GridPoint.x, vertex.GridPoint.y, vertex.GridPoint.z);
-
-            //TODO???
-            //foreach (var id in vertex.cellIds)
-            //{
-            //    VCell cell = DAC.cells[id];
-            //    cell.AddRangeOfNeighbors(vertex.cellIds);
-            //}
         }
 
         return vertices;
@@ -98,8 +86,7 @@ public class FloodGraphGenerator : MonoBehaviour
         while (queue.Count != 0)
         {
             GridPoint current = queue.Dequeue();
-
-            FloodFromPointToFindVertices(current, cellID);
+            CellFloodToFindVertices(current, cellID);
         }
     }
 
@@ -112,8 +99,6 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private void ConnectionFlood(GraphVertex rootVertex)
     {
-
-
         int x, y, z, id;
         int val = 1;
         // reset queue and add root vertex to visited
@@ -146,7 +131,7 @@ public class FloodGraphGenerator : MonoBehaviour
                     _gridPoint.z = z;
                     visited.Add(_gridPoint);
 
-                    if (IgnoreThisPoint(rootgp, x, y, z)) continue;
+                    if (IsDiagonal(rootgp, x, y, z)) continue;
                     // Enqueue the point with a new Linked list, starting the chain.
                     var queueEle = new QueueElement { GridPoint = _gridPoint, FoundPoint = false, Chain = new LinkedList<QueueElement>() };
                     queueEle.Chain.AddFirst(queueEle);
@@ -173,8 +158,7 @@ public class FloodGraphGenerator : MonoBehaviour
                 {
                     for (z = gp.z - val; z <= gp.z + val; z++)
                     {
-                        if (IgnoreThisPoint(gp, x, y, z)) continue;
-
+                        if (IsDiagonal(gp, x, y, z)) continue;
                         try
                         {
                             id = DAC.grid[x][y][z];
@@ -194,9 +178,7 @@ public class FloodGraphGenerator : MonoBehaviour
                         _gridPoint.z = z;
                         if (!visited.Contains(_gridPoint))
                         {
-
-                            GraphVertex foundVertex;
-                            if (IsPointVertex(_gridPoint, rootVertex, out foundVertex))
+                            if (IsPointVertex(_gridPoint, rootVertex, out GraphVertex foundVertex))
                             {
                                 //if point is a vertex then mark found as true
                                 found = true;
@@ -227,7 +209,7 @@ public class FloodGraphGenerator : MonoBehaviour
                                 //}
                                 #endregion
 
-                                // go through the chain and mark everything as found
+                                // go through the chain and mark everything as found, so the chain stops searching
                                 foreach (var item in chain)
                                 {
                                     item.FoundPoint = true;
@@ -240,14 +222,8 @@ public class FloodGraphGenerator : MonoBehaviour
 
                                 var firstElement = chain.First;
 
-                                ////check if the queue has split up into different direction, by seeing if the new point and the lastest point are adjecent or not
-                                //if (!ArePointsAdjacent(_gridPoint, lastElement.Value.GridPoint))
-                                //{
-                                //    //Chain has split, create a new chain (reset the linked list.)
-                                //    chain = new LinkedList<QueueElement>();
-
-
-                                // split the chain??
+                                // if the newQueue point are not near the head of the chain, assume the chain has "gone down two paths",
+                                // then split the chain by creating a new one from here. 
                                 if (!PointInRange(_gridPoint, firstElement.Value.GridPoint, 5))
                                 {
                                     //Chain has split, create a new chain(reset the linked list.)
@@ -263,21 +239,19 @@ public class FloodGraphGenerator : MonoBehaviour
                 }
             }
         }
-
     }
 
     /// <summary>
-    /// Flood search from a point and find vertices where the a certain amount of cells lie nest to one another. If vertices are very close, combine them into one vertex.
+    /// Check if the given point should be a new vertex or not, by checking the surrounding points for their cell ID. 
+    /// If the surrounding points share the same, cellID add them to the queue as to be analyzed next. 
     /// </summary>
     /// <param name="gp">Starting search GridPoint</param>
     /// <param name="cellID">The current cell id that to generate/find vertices for</param>
-    private void FloodFromPointToFindVertices(GridPoint gp, int cellID)
+    private void CellFloodToFindVertices(GridPoint gp, int cellID)
     {
-        List<GridPoint> pointsToQueue = new List<GridPoint>();
-        List<GridPoint> pointsWithSameCellId = new List<GridPoint>();
         Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
 
-        // === Step 1: scan surround gridpoints for what their ID is 
+        // === scan surrounding gridpoints for what their ID is and fill Dictionary ===
         int x, y, z, id;
         for (x = gp.x - 1; x <= gp.x + 1; x++)
         {
@@ -285,23 +259,20 @@ public class FloodGraphGenerator : MonoBehaviour
             {
                 for (z = gp.z - 1; z <= gp.z + 1; z++)
                 {
-
-                    //if (IgnoreThisPoint(gp, x, y, z)) continue;
                     try
                     {
                         id = DAC.grid[x][y][z];
                     }
-                    catch (IndexOutOfRangeException)
+                    catch (IndexOutOfRangeException) // lazy way to ignore out of bounds
                     {
                         continue;
                     }
-
                     if (id == -1)
                     {
-                        //ignore this one
+                        // ignore unmarked points
                         continue;
                     }
-                    else if (id == cellID) // same cellID as currently flooding from
+                    else if (id == cellID) // if same cellID as currently flooding from
                     {
                         _gridPoint.x = x;
                         _gridPoint.y = y;
@@ -310,14 +281,10 @@ public class FloodGraphGenerator : MonoBehaviour
                         if (!visited.Contains(_gridPoint))
                         {
                             visited.Add(_gridPoint);
-                            pointsToQueue.Add(_gridPoint);
-                        }
-                        else
-                        {
-                            pointsWithSameCellId.Add(_gridPoint);
+                            queue.Enqueue(_gridPoint);
                         }
                     }
-                    else
+                    else // not same cellID, add to dictionary or count up if already contains
                     {
                         if (surroundingCells.ContainsKey(id))
                         {
@@ -333,6 +300,7 @@ public class FloodGraphGenerator : MonoBehaviour
         }
 
         bool createNewVertex = false;
+        //count a priority based on the count of the surrounding cells 
         int prio = surroundingCells.Values.ToList().Sum();
         if (IsCornerPoint(gp))
         {
@@ -347,7 +315,7 @@ public class FloodGraphGenerator : MonoBehaviour
             if (surroundingCells.Keys.Count >= 1)
             {
                 // if on side line, give a boost to prio
-                prio += 7 * combineRange;
+                prio += 10;
                 createNewVertex = true;
             }
         }
@@ -357,7 +325,7 @@ public class FloodGraphGenerator : MonoBehaviour
             if (surroundingCells.Keys.Count >= 2)
             {
                 // if on side plane, give a small boost to prio
-                prio += 5 * combineRange;
+                prio += 5;
                 createNewVertex = true;
             }
         }
@@ -370,36 +338,32 @@ public class FloodGraphGenerator : MonoBehaviour
             }
         }
 
-        // If a new node is supposed to be created here, look if any nodes are nearby, then combine the nodes into one
+        // If a new Vertex is supposed to be created here, look if any vertices are nearby, if there are, combine them
         if (createNewVertex)
         {
-            // Create a new 
+            // Create a new Vertex
             GraphVertex newVertex = new GraphVertex(gp, prio, cellID);
             foreach (int item in surroundingCells.Keys)
             {
                 newVertex.AddCellID(item);
             }
 
-            List<GraphVertex> currentVertices;
             List<GraphVertex> toDelete = new List<GraphVertex>();
-            if (FindNearbyVertex(newVertex.GridPoint, combineRange, out currentVertices))
+            if (FindNearbyVertices(newVertex.GridPoint, combineRange, out List<GraphVertex> nearbyVertices))
             {
-                foreach (var vertex in currentVertices)
+                foreach (var nearbyVertex in nearbyVertices)
                 {
-                    if (vertex.GridPoint != gp)
+
+                    if (newVertex.Priotity > nearbyVertex.Priotity) // the new Vertex is a better candidate, eat the nearby Vertex and mark it for deletion
                     {
-                        if (newVertex.Priotity > vertex.Priotity) // the new node is a better candidate, eat the nearby node n, and mark it for deletion
-                        {
-                            CombineNodes(newVertex, vertex);
-                            toDelete.Add(vertex);
-                        }
-                        else
-                        {
-                            // let the existing node, eat the new one, set bool to not create a new node
-                            CombineNodes(vertex, newVertex);
-                            createNewVertex = false; // mark to not add the new vertex
-                            newVertex = vertex;
-                        }
+                        CombineVertices(newVertex, nearbyVertex);
+                        toDelete.Add(nearbyVertex);
+                    }
+                    else // let the existing node, eat the new one, swap bool to not create a new node
+                    {
+                        CombineVertices(nearbyVertex, newVertex);
+                        createNewVertex = false; // mark to not add the new vertex
+                        newVertex = nearbyVertex;
                     }
                 }
             }
@@ -412,27 +376,21 @@ public class FloodGraphGenerator : MonoBehaviour
                 vertices.Remove(item);
             }
         }
-
-        // add new points to the queue
-        foreach (GridPoint item in pointsToQueue)
-        {
-            queue.Enqueue(item);
-        }
     }
     /// ========== HELPER METHODS ==========
     #region HELPER METHODS
     /// <summary>
-    /// Returns true if the x y z results in being diagonnally placed compared to gp
+    /// Returns true if the x y z results in being a diagonnally placed point compared to gp
     /// </summary>
     /// <param name="gp"></param>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="z"></param>
     /// <returns></returns>
-    private bool IgnoreThisPoint(GridPoint gp, int x, int y, int z)
+    private bool IsDiagonal(GridPoint gp, int x, int y, int z)
     {
-        if (gp.x - 1 == x && gp.y - 1 == y) return true;
-        else if (gp.x == x && gp.y == y && gp.z == z) return true;
+        if (gp.x == x && gp.y == y && gp.z == z) return true; //ignore if same coords
+        else if (gp.x - 1 == x && gp.y - 1 == y) return true;
         else if (gp.x - 1 == x && gp.z - 1 == z) return true;
         else if (gp.y - 1 == y && gp.z - 1 == z) return true;
         else if (gp.y - 1 == y && gp.z + 1 == z) return true;
@@ -461,9 +419,9 @@ public class FloodGraphGenerator : MonoBehaviour
                     p.z >= gp.z - searchRange && p.z <= gp.z + searchRange;
     }
 
-    private bool IsVertexInsideCube(GraphVertex foundVertex)
+    private bool IsVertexInsideCube(GraphVertex vertex)
     {
-        return !IsOnSidePlane(foundVertex.GridPoint);
+        return !IsOnSidePlane(vertex.GridPoint);
     }
 
     private bool ArePointsAdjacent(GridPoint a, GridPoint b)
@@ -476,10 +434,19 @@ public class FloodGraphGenerator : MonoBehaviour
         return rootVertex.cellIds.Union(foundVertex.cellIds).Any();
     }
 
-    private bool FindNearbyVertex(GridPoint gp, int combineRange, out List<GraphVertex> vertexes, GraphVertex rootVertex = null)
+    /// <summary>
+    /// Goes though the already found vertices and checks if they are close to the provided GridPoint gp. It returns True if any vertices are near the point. 
+    /// It also returns the list found in the out variable vertices
+    /// </summary>
+    /// <param name="gp"></param>
+    /// <param name="combineRange"></param>
+    /// <param name="vertices"></param>
+    /// <param name="rootVertex"></param>
+    /// <returns></returns>
+    private bool FindNearbyVertices(GridPoint gp, int combineRange, out List<GraphVertex> vertices, GraphVertex rootVertex = null)
     {
         var list = new List<GraphVertex>();
-        foreach (var item in vertices)
+        foreach (var item in this.vertices)
         {
             var p = item.GridPoint;
             if (p == gp) continue;
@@ -491,9 +458,8 @@ public class FloodGraphGenerator : MonoBehaviour
                 list.Add(item);
             }
         }
-        vertexes = list;
-        return vertexes.Count > 0;
-        return false;
+        vertices = list;
+        return vertices.Count > 0;
     }
 
     private bool IsPointInQueue(GridPoint gp)
@@ -506,7 +472,6 @@ public class FloodGraphGenerator : MonoBehaviour
         foundVertex = vertices.Where(x => x.GridPoint == gp).FirstOrDefault();
         return foundVertex != null && foundVertex != rootVertex;
     }
-
 
     private bool IsCornerPoint(GridPoint p)
     {
