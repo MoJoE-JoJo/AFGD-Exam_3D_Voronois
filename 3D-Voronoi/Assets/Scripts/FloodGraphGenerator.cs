@@ -38,27 +38,19 @@ public class FloodGraphGenerator : MonoBehaviour
 
     public HashSet<GraphVertex> Run()
     {
-        visited = new HashSet<GridPoint>();
         vertices = new HashSet<GraphVertex>();
         // for each cell created by Divide and conquer, start a flood for finding Vertices
         foreach (VCell cell in DAC.cells)
         {
-            //reset queue when starting on a new cell
-
-            queue = new Queue<GridPoint>();
-
-            queue.Enqueue(cell.points[0]);
-            visited.Add(cell.points[0]);
-
-            VertexFlood(cell.id);
+            VertexFlood(cell);
         }
 
+        visited = new HashSet<GridPoint>();
         foreach (GraphVertex vertex in vertices)
         {
             ConnectionFlood(vertex);
             vertex.Position = DAC.GridPointCenter(vertex.GridPoint.x, vertex.GridPoint.y, vertex.GridPoint.z);
         }
-
         return vertices;
     }
 
@@ -81,12 +73,137 @@ public class FloodGraphGenerator : MonoBehaviour
         }
     }
 
-    private void VertexFlood(int cellID)
+    /// <summary>
+    /// Runs through all the points in the cell and checks if the given point should be a new vertex or not, by checking the surrounding points for their cell IDs. 
+    /// </summary>
+    /// <param name="cell"></param>
+    private void VertexFlood(VCell cell)
     {
-        while (queue.Count != 0)
+        foreach (GridPoint gp in cell.points)
         {
-            GridPoint current = queue.Dequeue();
-            CellFloodToFindVertices(current, cellID);
+            Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
+            int cellID = cell.id;
+
+            // === scan surrounding gridpoints for what their ID is and fill Dictionary ===
+            int x, y, z, id;
+            for (x = gp.x - 1; x <= gp.x + 1; x++)
+            {
+                for (y = gp.y - 1; y <= gp.y + 1; y++)
+                {
+                    for (z = gp.z - 1; z <= gp.z + 1; z++)
+                    {
+                        try
+                        {
+                            id = DAC.grid[x][y][z];
+                        }
+                        catch (IndexOutOfRangeException) // lazy way to ignore out of bounds
+                        {
+                            continue;
+                        }
+                        if (id == -1)
+                        {
+                            // ignore unmarked points
+                            continue;
+                        }
+                        else if (id == cellID) // if same cellID as currently flooding from
+                        {
+                            _gridPoint.x = x;
+                            _gridPoint.y = y;
+                            _gridPoint.z = z;
+
+                        }
+                        else // not same cellID, add to dictionary or count up if already contains
+                        {
+                            if (surroundingCells.ContainsKey(id))
+                            {
+                                surroundingCells[id] = surroundingCells[id] + 1;
+                            }
+                            else
+                            {
+                                surroundingCells.Add(id, 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            bool createNewVertex = false;
+            //count a priority based on the count of the surrounding cells 
+            int prio = surroundingCells.Values.ToList().Sum();
+            if (IsCornerPoint(gp))
+            {
+                //override prio, to ensure corner point is kept
+                prio = int.MaxValue;
+                // always create a new node in this case
+                createNewVertex = true;
+            }
+            else if (IsOnSideLine(gp))
+            {
+                // create new node if 1 or more different cell types are near
+                if (surroundingCells.Keys.Count >= 1)
+                {
+                    // if on side line, give a boost to prio
+                    prio += 10;
+                    createNewVertex = true;
+                }
+            }
+            else if (IsOnSidePlane(gp))
+            {
+                // create new node if 2 or more cells are near
+                if (surroundingCells.Keys.Count >= 2)
+                {
+                    // if on side plane, give a small boost to prio
+                    prio += 5;
+                    createNewVertex = true;
+                }
+            }
+            else
+            {
+                // need to be at least 3 ids around to be a Node
+                if (surroundingCells.Keys.Count >= 3)
+                {
+                    createNewVertex = true;
+                }
+            }
+
+            // If a new Vertex is supposed to be created here, look if any vertices are nearby, if there are, combine them
+            if (createNewVertex)
+            {
+                // Create a new Vertex
+                GraphVertex newVertex = new GraphVertex(gp, prio, cellID);
+                foreach (int item in surroundingCells.Keys)
+                {
+                    newVertex.AddCellID(item);
+                }
+
+                List<GraphVertex> toDelete = new List<GraphVertex>();
+                if (FindNearbyVertices(newVertex.GridPoint, combineRange, out List<GraphVertex> nearbyVertices))
+                {
+                    foreach (var nearbyVertex in nearbyVertices)
+                    {
+
+                        if (newVertex.Priotity > nearbyVertex.Priotity) // the new Vertex is a better candidate, eat the nearby Vertex and mark it for deletion
+                        {
+                            CombineVertices(newVertex, nearbyVertex);
+                            toDelete.Add(nearbyVertex);
+                        }
+                        else // let the existing node, eat the new one, swap bool to not create a new node
+                        {
+                            CombineVertices(nearbyVertex, newVertex);
+                            createNewVertex = false; // mark to not add the new vertex
+                            newVertex = nearbyVertex;
+                        }
+                    }
+                }
+                if (createNewVertex)
+                {
+                    vertices.Add(newVertex);
+                }
+                foreach (var item in toDelete)
+                {
+                    vertices.Remove(item);
+                }
+            }
         }
     }
 
@@ -237,143 +354,6 @@ public class FloodGraphGenerator : MonoBehaviour
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Check if the given point should be a new vertex or not, by checking the surrounding points for their cell ID. 
-    /// If the surrounding points share the same, cellID add them to the queue as to be analyzed next. 
-    /// </summary>
-    /// <param name="gp">Starting search GridPoint</param>
-    /// <param name="cellID">The current cell id that to generate/find vertices for</param>
-    private void CellFloodToFindVertices(GridPoint gp, int cellID)
-    {
-        Dictionary<int, int> surroundingCells = new Dictionary<int, int>();
-
-        // === scan surrounding gridpoints for what their ID is and fill Dictionary ===
-        int x, y, z, id;
-        for (x = gp.x - 1; x <= gp.x + 1; x++)
-        {
-            for (y = gp.y - 1; y <= gp.y + 1; y++)
-            {
-                for (z = gp.z - 1; z <= gp.z + 1; z++)
-                {
-                    try
-                    {
-                        id = DAC.grid[x][y][z];
-                    }
-                    catch (IndexOutOfRangeException) // lazy way to ignore out of bounds
-                    {
-                        continue;
-                    }
-                    if (id == -1)
-                    {
-                        // ignore unmarked points
-                        continue;
-                    }
-                    else if (id == cellID) // if same cellID as currently flooding from
-                    {
-                        _gridPoint.x = x;
-                        _gridPoint.y = y;
-                        _gridPoint.z = z;
-                        // if gridpoint not visited, add to queue and visited
-                        if (!visited.Contains(_gridPoint))
-                        {
-                            visited.Add(_gridPoint);
-                            queue.Enqueue(_gridPoint);
-                        }
-                    }
-                    else // not same cellID, add to dictionary or count up if already contains
-                    {
-                        if (surroundingCells.ContainsKey(id))
-                        {
-                            surroundingCells[id] = surroundingCells[id] + 1;
-                        }
-                        else
-                        {
-                            surroundingCells.Add(id, 1);
-                        }
-                    }
-                }
-            }
-        }
-
-        bool createNewVertex = false;
-        //count a priority based on the count of the surrounding cells 
-        int prio = surroundingCells.Values.ToList().Sum();
-        if (IsCornerPoint(gp))
-        {
-            //override prio, to ensure corner point is kept
-            prio = int.MaxValue;
-            // always create a new node in this case
-            createNewVertex = true;
-        }
-        else if (IsOnSideLine(gp))
-        {
-            // create new node if 1 or more different cell types are near
-            if (surroundingCells.Keys.Count >= 1)
-            {
-                // if on side line, give a boost to prio
-                prio += 10;
-                createNewVertex = true;
-            }
-        }
-        else if (IsOnSidePlane(gp))
-        {
-            // create new node if 2 or more cells are near
-            if (surroundingCells.Keys.Count >= 2)
-            {
-                // if on side plane, give a small boost to prio
-                prio += 5;
-                createNewVertex = true;
-            }
-        }
-        else
-        {
-            // need to be at least 3 ids around to be a Node
-            if (surroundingCells.Keys.Count >= 3)
-            {
-                createNewVertex = true;
-            }
-        }
-
-        // If a new Vertex is supposed to be created here, look if any vertices are nearby, if there are, combine them
-        if (createNewVertex)
-        {
-            // Create a new Vertex
-            GraphVertex newVertex = new GraphVertex(gp, prio, cellID);
-            foreach (int item in surroundingCells.Keys)
-            {
-                newVertex.AddCellID(item);
-            }
-
-            List<GraphVertex> toDelete = new List<GraphVertex>();
-            if (FindNearbyVertices(newVertex.GridPoint, combineRange, out List<GraphVertex> nearbyVertices))
-            {
-                foreach (var nearbyVertex in nearbyVertices)
-                {
-
-                    if (newVertex.Priotity > nearbyVertex.Priotity) // the new Vertex is a better candidate, eat the nearby Vertex and mark it for deletion
-                    {
-                        CombineVertices(newVertex, nearbyVertex);
-                        toDelete.Add(nearbyVertex);
-                    }
-                    else // let the existing node, eat the new one, swap bool to not create a new node
-                    {
-                        CombineVertices(nearbyVertex, newVertex);
-                        createNewVertex = false; // mark to not add the new vertex
-                        newVertex = nearbyVertex;
-                    }
-                }
-            }
-            if (createNewVertex)
-            {
-                vertices.Add(newVertex);
-            }
-            foreach (var item in toDelete)
-            {
-                vertices.Remove(item);
             }
         }
     }
