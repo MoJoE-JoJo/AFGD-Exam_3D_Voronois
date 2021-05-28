@@ -31,10 +31,10 @@ public class RunAlgorithm : MonoBehaviour
     [SerializeField] private bool drawSeeds;
     [SerializeField] private DEBUGDRAWTYPE dacDrawType;
     [SerializeField] private bool drawDivideAndConquer;
-    [SerializeField] private bool runOnlyDivideAndConquer;
     [SerializeField] private bool drawFloodedGraph;
     [SerializeField] private bool drawFaceCentroids;
     [SerializeField] private bool hidePolyhedrons;
+    [SerializeField] private bool runOnlyDivideAndConquer;
 
     private bool areaInited = false;
     private bool seedsInited = false;
