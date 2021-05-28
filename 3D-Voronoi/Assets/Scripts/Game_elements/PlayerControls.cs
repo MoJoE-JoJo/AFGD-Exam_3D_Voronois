@@ -22,6 +22,7 @@ public class PlayerControls : MonoBehaviour
     public Image colorIndicator;
     public GameObject hammer;
     public GameObject gun;
+    public GameObject canvas;
     public bool canMove = true;
     public AudioSource hammerSound;
     public AudioSource swingHammerAudio;
@@ -121,6 +122,25 @@ public class PlayerControls : MonoBehaviour
                 }
             }
         }
+        if (Input.GetKey(KeyCode.Mouse0))
+        {
+            if (highlighted != null)
+            {
+                if (!hammerEquipped)
+                {
+                    gunParticles.Play();
+                    highlighted.GetComponent<HighLightMesh>().baseColor = colors[currentColor];
+                }
+            }
+            else if (highlighted == null)
+            {
+               if (!hammerEquipped)
+                {
+                    gunParticles.Play();
+                }
+            }
+        }
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Application.Quit();
@@ -132,6 +152,10 @@ public class PlayerControls : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q))
         {
             SwitchTool();
+        }
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            canvas.SetActive(!canvas.activeInHierarchy);
         }
 
     }
