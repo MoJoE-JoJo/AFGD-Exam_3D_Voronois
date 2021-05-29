@@ -633,7 +633,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &705507994
 Light:
   m_ObjectHideFlags: 0
@@ -860,14 +860,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 787860683}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90cb7dddcb3987a4fabf5973e0d95411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  drawArea: 0
-  drawSeeds: 0
-  drawDivideAndConquer: 0
+  drawArea: 1
+  drawSeeds: 1
+  drawDivideAndConquer: 1
   debugType: 1
   rerun: 0
   seedPoints:
@@ -878,7 +878,7 @@ MonoBehaviour:
   - {x: 5.51, y: 6.89, z: 0}
   - {x: 11.51, y: 7.48, z: 0}
   - {x: 3.8, y: 2.9, z: 0}
-  resolution: 100
+  resolution: 20
   size: 13
   cells:
   - id: 0
@@ -40013,11 +40013,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca0f462769cbf0f47a1f0baae590e81d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  drawArea: 1
-  drawSeeds: 1
-  drawDivideAndConquer: 1
-  debugType: 1
-  rerun: 0
+  cells: []
   seedPoints:
   - {x: 4.88, y: 2.82, z: 7.94}
   - {x: 3.6, y: 8.16, z: 6.83}
@@ -40026,9 +40022,6 @@ MonoBehaviour:
   - {x: 5.51, y: 6.89, z: 0}
   - {x: 11.51, y: 7.48, z: 11.7}
   - {x: 3.8, y: 2.9, z: 0}
-  resolution: 250
-  size: 13
-  cells: []
 --- !u!1 &812978281
 GameObject:
   m_ObjectHideFlags: 0
