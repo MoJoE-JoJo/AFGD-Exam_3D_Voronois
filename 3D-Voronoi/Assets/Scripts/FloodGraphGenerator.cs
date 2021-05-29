@@ -59,7 +59,7 @@ public class FloodGraphGenerator : MonoBehaviour
         foreach (GraphVertex item in vertices)
         {
             //Gizmos.DrawSphere(DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z), 0.2f);
-            Gizmos.DrawSphere(DAC.GridPointCenter(item.GridPoint.x, item.GridPoint.y, item.GridPoint.z), 0.2f);
+            Gizmos.DrawSphere(DAC.GridPointCenter(item.GridPoint.x, item.GridPoint.y, item.GridPoint.z), 0.1f);
             /*
             var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.transform.position = DAC.GridPointCenter(item.Point.x, item.Point.y, item.Point.z);
@@ -143,7 +143,7 @@ public class FloodGraphGenerator : MonoBehaviour
                 if (surroundingCells.Keys.Count >= 1)
                 {
                     // if on side line, give a boost to prio
-                    prio += 10;
+                    prio += 20;
                     createNewVertex = true;
                 }
             }
@@ -153,7 +153,7 @@ public class FloodGraphGenerator : MonoBehaviour
                 if (surroundingCells.Keys.Count >= 2)
                 {
                     // if on side plane, give a small boost to prio
-                    prio += 5;
+                    prio += 10;
                     createNewVertex = true;
                 }
             }
@@ -214,6 +214,11 @@ public class FloodGraphGenerator : MonoBehaviour
         public LinkedList<QueueElement> Chain { get; set; }
     }
 
+    /// <summary>
+    /// This method starts at the given vetex and then does breath first search out along its nearby gridpoints that are marked with and ID. 
+    /// It starts off in 6 "directions" and is 
+    /// </summary>
+    /// <param name="rootVertex"></param>
     private void ConnectionFlood(GraphVertex rootVertex)
     {
         int x, y, z, id;
@@ -263,9 +268,8 @@ public class FloodGraphGenerator : MonoBehaviour
             // Current queue element in use
             var element = connectionQueue.Dequeue();
             GridPoint gp = element.GridPoint;
-            bool found = element.FoundPoint;
             LinkedList<QueueElement> chain = element.Chain;
-            if (found)
+            if (element.FoundPoint)
             {
                 continue;
             }
@@ -298,7 +302,7 @@ public class FloodGraphGenerator : MonoBehaviour
                             if (IsPointVertex(_gridPoint, rootVertex, out GraphVertex foundVertex))
                             {
                                 //if point is a vertex then mark found as true
-                                found = true;
+                                element.FoundPoint = true;
                                 //add a connection to origin vertex
                                 rootVertex.AddConnection(foundVertex);
                                 foundVertex.AddConnection(rootVertex);
@@ -335,7 +339,7 @@ public class FloodGraphGenerator : MonoBehaviour
                             else // not a vertex point, add to queue to continue search
                             {
                                 visited.Add(_gridPoint);
-                                var newQueue = new QueueElement { GridPoint = _gridPoint, FoundPoint = found };
+                                var newQueue = new QueueElement { GridPoint = _gridPoint, FoundPoint = element.FoundPoint };
 
                                 var firstElement = chain.First;
 
@@ -357,6 +361,8 @@ public class FloodGraphGenerator : MonoBehaviour
             }
         }
     }
+
+
     /// ========== HELPER METHODS ==========
     #region HELPER METHODS
     /// <summary>
@@ -406,7 +412,7 @@ public class FloodGraphGenerator : MonoBehaviour
 
     private bool ArePointsAdjacent(GridPoint a, GridPoint b)
     {
-        return PointInRange(a, b, 2);
+        return PointInRange(a, b, 1);
     }
 
     private bool DoesVerticesSharesCell(GraphVertex rootVertex, GraphVertex foundVertex)
