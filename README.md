@@ -3,7 +3,7 @@ This is the source code for a exam project for the course "Algorithms for Games 
 
 ## The Project uses Unity Version 2020.2.2f1
 
-A build version of the game made with the algorithm can be found at *ITCH.IO LINK*
+A build version of the game made with the algorithm can be found at https://mojoe.itch.io/space-art-or-something
 
 ### Debugging and algorithm fun stuff
 In the scene Sculpting, all the algorithm steps are combined in the gameobject "Run Algorithm" and it contains a script that includes some debugging features, like drawing the divide-and-conquer output or the generated graph.
